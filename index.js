@@ -28,6 +28,39 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
+
+        const usersCollection = client.db('assethexadb').collection('users')
+
+
+        
+    // Save or modify user email, status in DB
+    app.put('/users/:email', async (req, res) => {
+        const email = req.params.email
+        const user = req.body
+        const query = { email: email }
+        const options = { upsert: true }
+        const isExist = await usersCollection.findOne(query)
+        console.log('User found?----->', isExist)
+        if (isExist) return res.send(isExist)
+        const result = await usersCollection.updateOne(
+          query,
+          {
+            $set: { ...user, timestamp: Date.now() },
+          },
+          options
+        )
+        res.send(result)
+      })
+
+
+       // Get all users
+    app.get('/users',  async (req, res) => {
+        const result = await usersCollection.find().toArray()
+        res.send(result)
+      })
+
+
+
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         client.connect();
@@ -50,3 +83,8 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening on port ${port}!`)
 })
+
+
+
+
+
