@@ -34,7 +34,9 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const transectionsCollection = client.db("assethexadb").collection('transections')
+    const accountsCollection = client.db("assethexadb").collection('accounts')
 
+    // for transection
     // create
 
     app.post('/transections',async(req,res)=>{
@@ -84,6 +86,25 @@ async function run() {
             }
         }
         const result = await transectionsCollection.updateOne(filter,transections,options);
+        res.send(result)
+    })
+
+
+    // for accounts
+    // create
+
+    app.post('/accounts',async(req,res)=>{
+        const newAccounts = req.body;
+        // console.log(newAccounts)
+        const result = await accountsCollection.insertOne(newAccounts);
+        res.send(result)
+    })
+
+     // read
+
+     app.get('/accounts',async(req,res)=>{
+        const cursor = accountsCollection.find()
+        const result = await cursor.toArray()
         res.send(result)
     })
 
