@@ -105,7 +105,7 @@ async function run() {
                     AmountOnAccount = AmountOnAccount + newTransections?.amount;
                 }
                 else if (typeTransec === 'EXPENSE') {
-                    AmountOnAccount = AmountOnAccount + newTransections?.amount;
+                    AmountOnAccount = AmountOnAccount - newTransections?.amount;
                 }
                 else {
                     AmountOnAccount = AmountOnAccount
