@@ -31,42 +31,41 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
-        const usersCollection = client.db('assethexadb').collection('users')
-
-
-        
-    // Save or modify user email, status in DB
-    app.put('/users/:email', async (req, res) => {
-        const email = req.params.email
-        const user = req.body
-        const query = { email: email }
-        const options = { upsert: true }
-        const isExist = await usersCollection.findOne(query)
-        console.log('User found?----->', isExist)
-        if (isExist) return res.send(isExist)
-        const result = await usersCollection.updateOne(
-          query,
-          {
-            $set: { ...user, timestamp: Date.now() },
-          },
-          options
-        )
-        res.send(result)
-      })
-
-
-       // Get all users
-    app.get('/users',  async (req, res) => {
-        const result = await usersCollection.find().toArray()
-        res.send(result)
-      })
-
-
-
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         client.connect();
         // Send a ping to confirm a successful connection
+
+        const usersCollection = client.db('assethexadb').collection('users')
+
+
+
+        // Save or modify user email, status in DB
+        app.put('/users/:email', async (req, res) => {
+            const email = req.params.email
+            const user = req.body
+            const query = { email: email }
+            const options = { upsert: true }
+            const isExist = await usersCollection.findOne(query)
+            console.log('User found?----->', isExist)
+            if (isExist) return res.send(isExist)
+            const result = await usersCollection.updateOne(
+                query,
+                {
+                    $set: { ...user, timestamp: Date.now() },
+                },
+                options
+            )
+            res.send(result)
+        })
+
+
+        // Get all users
+        app.get('/users', async (req, res) => {
+            const result = await usersCollection.find().toArray()
+            res.send(result)
+        })
+
 
         const database = client.db("assethexadb");
 
@@ -77,11 +76,61 @@ async function run() {
         // for transection
         // create
 
+        // app.post('/transections', async (req, res) => {
+        //     try {
+        //         const newTransections = req.body;
+        //         // console.log(newTransections)
+        //         const result = await transectionsCollection.insertOne(newTransections);
+        //         res.send(result)
+        //     } catch (error) {
+        //         res.send(error.message);
+        //     }
+        // })
+
         app.post('/transections', async (req, res) => {
             try {
+                // const id = req.params.id;
+                const account = req.body.account;
+                const typeTransec = req.query.type;
+                const filter = { account: account }
+                const options = { upsert: true };
                 const newTransections = req.body;
-                // console.log(newTransections)
-                const result = await transectionsCollection.insertOne(newTransections);
+
+                const queryAccount = { account: account };
+                // find the account
+                const accountfindOne = await accountsCollection.findOne(query);
+                let AmountOnAccount = accountfindOne?.accountAmount;
+
+                if (typeTransec === 'INCOME') {
+                    AmountOnAccount = AmountOnAccount + newTransections?.amount;
+                }
+                else if (typeTransec === 'EXPENSE') {
+                    AmountOnAccount = AmountOnAccount + newTransections?.amount;
+                }
+                else {
+                    AmountOnAccount = AmountOnAccount
+                }
+
+                const transectionsUpdateAccount = {
+                    $set: {
+                        // TODO: update property
+                        AmountAccount: AmountOnAccount
+
+
+                    }
+                }
+
+                // insertOne into transections collection
+                const resultTransec = await transectionsCollection.insertOne(newTransections);
+
+                // update on account
+                const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
+
+                // respose
+                const result = {
+                    resultTransec,
+                    resultAccount
+                }
                 res.send(result)
             } catch (error) {
                 res.send(error.message);
@@ -116,7 +165,7 @@ async function run() {
             }
         })
 
-        // find
+        // find one
 
         app.get('/transections/:id', async (req, res) => {
             try {
@@ -143,6 +192,7 @@ async function run() {
 
                     }
                 }
+
                 const result = await transectionsCollection.updateOne(filter, transections, options);
                 res.send(result)
             } catch (error) {
