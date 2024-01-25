@@ -14,6 +14,7 @@
 ```
 [
     {
+        "date": "",
         "account": "Cash",
         "type": "INCOME",
         "category": "Salary",
