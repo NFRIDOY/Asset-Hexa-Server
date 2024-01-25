@@ -15,105 +15,144 @@ app.use(cors({
 
 
 
-const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.mq17fxg.mongodb.net/?retryWrites=true&w=majority`;
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.mq17fxg.mongodb.net/?retryWrites=true&w=majority`;
+const uri = process.env.URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
 async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        // await client.connect();
+        client.connect();
+        // Send a ping to confirm a successful connection
 
-    const transectionsCollection = client.db("assethexadb").collection('transections')
-    const accountsCollection = client.db("assethexadb").collection('accounts')
+        const database = client.db("assethexadb");
 
-    // for transection
-    // create
+        const transectionsCollection = database.collection('transections')
+        const accountsCollection = database.collection('accounts')
+        const categoryCollection = database.collection('categoris')
 
-    app.post('/transections',async(req,res)=>{
-        const newTransections = req.body;
-        // console.log(newTransections)
-        const result = await transectionsCollection.insertOne(newTransections);
-        res.send(result)
-    })
+        // for transection
+        // create
 
-     // read
+        app.post('/transections', async (req, res) => {
+            const newTransections = req.body;
+            // console.log(newTransections)
+            const result = await transectionsCollection.insertOne(newTransections);
+            res.send(result)
+        })
 
-     app.get('/transections',async(req,res)=>{
-        const cursor = transectionsCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
-    })
+        // read
 
-     // delete
+        app.get('/transections', async (req, res) => {
+            const cursor = transectionsCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
-     app.delete('/transections/:id',async(req,res)=>{
-        const id  = req.params.id;
-        const query ={_id: new ObjectId(id)}
-        const result = await transectionsCollection.deleteOne(query);
-        res.send(result)
-    })
+        // delete
 
-    // find
+        app.delete('/transections/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await transectionsCollection.deleteOne(query);
+            res.send(result)
+        })
 
-    app.get('/transections/:id',async(req,res)=>{
-        const id=req.params.id;
-        const query = {_id: new ObjectId(id)}
-        const result = await transectionsCollection.findOne(query);
-        res.send(result)
-    })
+        // find
 
-    // update
+        app.get('/transections/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await transectionsCollection.findOne(query);
+            res.send(result)
+        })
 
-    app.put('/transections/:id', async(req,res)=>{
-        const id = req.params.id;
-        const filter = {_id: new ObjectId(id)}
-        const options = { upsert: true };
-        const updateTransections = req.body
-        const transections={
-            $set:{
-                 // TODO: update property
-              
+        // update
+
+        app.put('/transections/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updateTransections = req.body
+            const transections = {
+                $set: {
+                    // TODO: update property
+
+                }
             }
-        }
-        const result = await transectionsCollection.updateOne(filter,transections,options);
-        res.send(result)
-    })
+            const result = await transectionsCollection.updateOne(filter, transections, options);
+            res.send(result)
+        })
 
 
-    // for accounts
-    // create
+        // for accounts
+        // create
 
-    app.post('/accounts',async(req,res)=>{
-        const newAccounts = req.body;
-        // console.log(newAccounts)
-        const result = await accountsCollection.insertOne(newAccounts);
-        res.send(result)
-    })
+        app.post('/accounts', async (req, res) => {
+            const newAccounts = req.body;
+            // console.log(newAccounts)
+            const result = await accountsCollection.insertOne(newAccounts);
+            res.send(result)
+        })
 
-     // read
+        // read
 
-     app.get('/accounts',async(req,res)=>{
-        const cursor = accountsCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
-    })
+        app.get('/accounts', async (req, res) => {
+            const cursor = accountsCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
+        // update accounts
+        // delete account
+
+        // add categories
+        app.post('/categories', async (req, res) => {
+            const catReq = req.body;
+
+            const result = await categoryCollection.insertOne(catReq);
+        })
+
+        // DEMO /categories?type=INCOME
+        // DEMO /categories?type=EXPENSE
+        app.get('/categories', async (req, res) => {
+            try {
+                // const catReq = req.body;
+                const catQuery = req.query.type;
+                const query = { type: catQuery };
+                const result = await categoryCollection.find(query).toArray();
+                res.send(result)
+                // if (catQuery === "INCOME") {
+                //     const query = { type: catQuery };
+                //     const result = await categoryCollection.find().toArray();
+                //     res.send(result)
+                // }
+                // else if (catQuery === "EXPENSE") {
+                //     const query = { type: catQuery };
+                //     const result = await categoryCollection.find().toArray();
+                //     res.send(result)
+                // }
+            } catch (error) {
+                res.send(error.message);
+            }
+        })
+
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    } finally {
+        // Ensures that the client will close when you finish/error
+        // await client.close();
+    }
 }
 run().catch(console.dir);
 
