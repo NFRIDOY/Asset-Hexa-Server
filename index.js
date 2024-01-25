@@ -31,6 +31,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
+
         const database = client.db("assethexadb");
 
 
@@ -73,20 +74,79 @@ async function run() {
 
 
 
+
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         // client.connect();
         // Send a ping to confirm a successful connection
 
 
+
         // for transection
         // create
 
+        // app.post('/transections', async (req, res) => {
+        //     try {
+        //         const newTransections = req.body;
+        //         // console.log(newTransections)
+        //         const result = await transectionsCollection.insertOne(newTransections);
+        //         res.send(result)
+        //     } catch (error) {
+        //         res.send(error.message);
+        //     }
+        // })
+        // DEMO: /transections?type=INCOME
+        // DEMO: /transections?type=EXPENSE
         app.post('/transections', async (req, res) => {
             try {
+                // const id = req.params.id;
+                const account = req.body.account;
                 const newTransections = req.body;
-                // console.log(newTransections)
-                const result = await transectionsCollection.insertOne(newTransections);
+                const newTransectionsEmail = req.body?.email;
+                // const newTransectionsAmount = req.body.amount;
+                const typeTransec = req.body?.type;
+                const filter = { account: account }
+                const options = { upsert: true }; 
+
+                const queryAccount = { account: account, email: newTransectionsEmail };
+                // find the account
+                const accountfindOne = await accountsCollection.findOne(queryAccount);
+                // init amount of that account
+                let AmountOnAccount = accountfindOne?.amount;
+
+                if (typeTransec === 'INCOME') {
+                    AmountOnAccount = AmountOnAccount + newTransections?.amount;
+                }
+                else if (typeTransec === 'EXPENSE') {
+                    AmountOnAccount = AmountOnAccount - newTransections?.amount;
+                }
+                // else if (typeTransec === 'TRANSFAR') {
+                //     AmountOnAccount = AmountOnAccount - newTransections?.amount;
+                // }
+                else {
+                    AmountOnAccount = AmountOnAccount
+                }
+
+                const transectionsUpdateAccount = {
+                    $set: {
+                        // TODO: update property
+                        amount: AmountOnAccount
+
+
+                    }
+                }
+
+                // insertOne into transections collection
+                const resultTransec = await transectionsCollection.insertOne(newTransections);
+
+                // update on account
+                const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
+
+                // respose
+                const result = {
+                    resultTransec,
+                    resultAccount
+                }
                 res.send(result)
             } catch (error) {
                 res.send(error.message);
@@ -96,10 +156,12 @@ async function run() {
         // read
         // DEMO /transections?type=INCOME
         // DEMO /transections?type=EXPENSE
+        // Example: https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
         app.get('/transections', async (req, res) => {
             try {
                 const transQuery = req.query.type;
-                const query = { type: transQuery };
+                const emailQuery = req.query.email;
+                const query = { type: transQuery, email: emailQuery };
                 const cursor = transectionsCollection.find(query)
                 const result = await cursor.toArray()
                 res.send(result)
@@ -121,7 +183,7 @@ async function run() {
             }
         })
 
-        // find
+        // find one
 
         app.get('/transections/:id', async (req, res) => {
             try {
@@ -148,6 +210,7 @@ async function run() {
 
                     }
                 }
+
                 const result = await transectionsCollection.updateOne(filter, transections, options);
                 res.send(result)
             } catch (error) {
