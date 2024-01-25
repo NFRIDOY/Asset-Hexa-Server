@@ -45,10 +45,14 @@ async function run() {
         // create
 
         app.post('/transections', async (req, res) => {
-            const newTransections = req.body;
-            // console.log(newTransections)
-            const result = await transectionsCollection.insertOne(newTransections);
-            res.send(result)
+            try {
+                const newTransections = req.body;
+                // console.log(newTransections)
+                const result = await transectionsCollection.insertOne(newTransections);
+                res.send(result)
+            } catch (error) {
+                res.send(error.message);
+            }
         })
 
         // read
@@ -62,43 +66,55 @@ async function run() {
                 const result = await cursor.toArray()
                 res.send(result)
             } catch (error) {
-                res.status(500).json({message: error.message});
+                res.status(500).json({ message: error.message });
             }
         })
 
         // delete
 
         app.delete('/transections/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await transectionsCollection.deleteOne(query);
-            res.send(result)
+            try {
+                const id = req.params.id;
+                const query = { _id: new ObjectId(id) }
+                const result = await transectionsCollection.deleteOne(query);
+                res.send(result)
+            } catch (error) {
+                res.send(error.message);
+            }
         })
 
         // find
 
         app.get('/transections/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await transectionsCollection.findOne(query);
-            res.send(result)
+            try {
+                const id = req.params.id;
+                const query = { _id: new ObjectId(id) }
+                const result = await transectionsCollection.findOne(query);
+                res.send(result)
+            } catch (error) {
+                res.send(error.message);
+            }
         })
 
         // update
 
         app.put('/transections/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) }
-            const options = { upsert: true };
-            const updateTransections = req.body
-            const transections = {
-                $set: {
-                    // TODO: update property
+            try {
+                const id = req.params.id;
+                const filter = { _id: new ObjectId(id) }
+                const options = { upsert: true };
+                const updateTransections = req.body
+                const transections = {
+                    $set: {
+                        // TODO: update property
 
+                    }
                 }
+                const result = await transectionsCollection.updateOne(filter, transections, options);
+                res.send(result)
+            } catch (error) {
+                res.send(error.message);
             }
-            const result = await transectionsCollection.updateOne(filter, transections, options);
-            res.send(result)
         })
 
 
@@ -106,18 +122,26 @@ async function run() {
         // create
 
         app.post('/accounts', async (req, res) => {
-            const newAccounts = req.body;
-            // console.log(newAccounts)
-            const result = await accountsCollection.insertOne(newAccounts);
-            res.send(result)
+            try {
+                const newAccounts = req.body;
+                // console.log(newAccounts)
+                const result = await accountsCollection.insertOne(newAccounts);
+                res.send(result)
+            } catch (error) {
+
+            }
         })
 
         // read
 
         app.get('/accounts', async (req, res) => {
-            const cursor = accountsCollection.find()
-            const result = await cursor.toArray()
-            res.send(result)
+            try {
+                const cursor = accountsCollection.find()
+                const result = await cursor.toArray()
+                res.send(result)
+            } catch (error) {
+                res.send(error.message);
+            }
         })
 
         // update accounts
@@ -125,9 +149,13 @@ async function run() {
 
         // add categories
         app.post('/categories', async (req, res) => {
-            const catReq = req.body;
-
-            const result = await categoryCollection.insertOne(catReq);
+            try {
+                const catReq = req.body;
+                const result = await categoryCollection.insertOne(catReq);
+                res.send(result);
+            } catch (error) {
+                res.send(error.message);
+            }
         })
 
         // DEMO /categories?type=INCOME
