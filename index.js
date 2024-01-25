@@ -296,8 +296,9 @@ async function run() {
                 const cursor = await transectionsCollection.find(query).toArray();
 
                 const catPiData = cursor?.map((cat) => cat?.amount);
+                const catPiLebel = cursor?.map((cat) => cat?.category);
                 // console.log(catPiData);
-                res.send(catPiData);
+                res.send({catPiData, catPiLebel});
             } catch (error) {
                 res.send(error);
 
