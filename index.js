@@ -32,6 +32,12 @@ async function run() {
     try {
 
         const usersCollection = client.db('assethexadb').collection('users')
+        const database = client.db("assethexadb");
+
+        const transectionsCollection = database.collection('transections')
+        const accountsCollection = database.collection('accounts')
+        const categoryCollection = database.collection('categoris')
+
 
 
         
@@ -65,15 +71,10 @@ async function run() {
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
-        client.connect();
+        // client.connect();
         // Send a ping to confirm a successful connection
 
-        const database = client.db("assethexadb");
-
-        const transectionsCollection = database.collection('transections')
-        const accountsCollection = database.collection('accounts')
-        const categoryCollection = database.collection('categoris')
-
+     
         // for transection
         // create
 
