@@ -1,0 +1,23 @@
+[
+    {
+        "account": "Cash",
+        "type": "INCOME",
+        "category": "Salary",
+        "amount": 5000,
+        "Notes": "First Income"
+    },
+    {
+        "account": "Cash",
+        "type": "EXPENSE",
+        "category": "Food",
+        "amount": 2000,
+        "Notes": "First Income"
+    },
+    {
+        "account": "Cash",
+        "type": "TRANSFER",
+        "to": "Bkash",
+        "amount": 2000,
+        "Notes": "First Income"
+    }
+]

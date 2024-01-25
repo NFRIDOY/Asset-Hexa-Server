@@ -95,20 +95,23 @@ async function run() {
         //         res.send(error.message);
         //     }
         // })
-
+        // DEMO: /transections?type=INCOME
+        // DEMO: /transections?type=EXPENSE
         app.post('/transections', async (req, res) => {
             try {
                 // const id = req.params.id;
                 const account = req.body.account;
-                const typeTransec = req.query.type;
-                const filter = { account: account }
-                const options = { upsert: true };
                 const newTransections = req.body;
+                // const newTransectionsAmount = req.body.amount;
+                const typeTransec = req.body?.type;
+                const filter = { account: account }
+                const options = { upsert: true }; 
 
                 const queryAccount = { account: account };
                 // find the account
-                const accountfindOne = await accountsCollection.findOne(query);
-                let AmountOnAccount = accountfindOne?.accountAmount;
+                const accountfindOne = await accountsCollection.findOne(queryAccount);
+                // init amount of that account
+                let AmountOnAccount = accountfindOne?.amount;
 
                 if (typeTransec === 'INCOME') {
                     AmountOnAccount = AmountOnAccount + newTransections?.amount;
@@ -116,6 +119,9 @@ async function run() {
                 else if (typeTransec === 'EXPENSE') {
                     AmountOnAccount = AmountOnAccount - newTransections?.amount;
                 }
+                // else if (typeTransec === 'TRANSFAR') {
+                //     AmountOnAccount = AmountOnAccount - newTransections?.amount;
+                // }
                 else {
                     AmountOnAccount = AmountOnAccount
                 }
@@ -123,7 +129,7 @@ async function run() {
                 const transectionsUpdateAccount = {
                     $set: {
                         // TODO: update property
-                        AmountAccount: AmountOnAccount
+                        amount: AmountOnAccount
 
 
                     }
