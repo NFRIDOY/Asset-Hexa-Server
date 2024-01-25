@@ -34,9 +34,9 @@ async function run() {
         const database = client.db("assethexadb");
 
 
-        
 
-        const usersCollection = client.db('assethexadb').collection('users')
+
+        const usersCollection = database.collection('users')
 
         const transectionsCollection = database.collection('transections')
         const accountsCollection = database.collection('accounts')
