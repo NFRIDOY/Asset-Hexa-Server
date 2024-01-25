@@ -102,12 +102,13 @@ async function run() {
                 // const id = req.params.id;
                 const account = req.body.account;
                 const newTransections = req.body;
+                const newTransectionsEmail = req.body?.email;
                 // const newTransectionsAmount = req.body.amount;
                 const typeTransec = req.body?.type;
                 const filter = { account: account }
                 const options = { upsert: true }; 
 
-                const queryAccount = { account: account };
+                const queryAccount = { account: account, email: newTransectionsEmail };
                 // find the account
                 const accountfindOne = await accountsCollection.findOne(queryAccount);
                 // init amount of that account
@@ -155,10 +156,12 @@ async function run() {
         // read
         // DEMO /transections?type=INCOME
         // DEMO /transections?type=EXPENSE
+        // Example: https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
         app.get('/transections', async (req, res) => {
             try {
                 const transQuery = req.query.type;
-                const query = { type: transQuery };
+                const emailQuery = req.query.email;
+                const query = { type: transQuery, email: emailQuery };
                 const cursor = transectionsCollection.find(query)
                 const result = await cursor.toArray()
                 res.send(result)

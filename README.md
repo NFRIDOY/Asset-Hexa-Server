@@ -8,6 +8,7 @@
 - Post EXPENSE API for transections: [https://asset-hexa-server.vercel.app/transections?type=EXPENSE](https://asset-hexa-server.vercel.app/transections?type=EXPENSE)
 
 - Get API for account: [https://asset-hexa-server.vercel.app/transections](https://asset-hexa-server.vercel.app/transections)
+Example: [https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com](https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
 
 ## Object Example For Post INCOME API for transections
 ```
