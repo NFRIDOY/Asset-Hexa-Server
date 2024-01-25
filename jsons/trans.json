@@ -1,0 +1,34 @@
+[
+    {
+        "email": "backend@example.com",
+        "account": "Cash",
+        "type": "INCOME",
+        "category": "Salary",
+        "amount": 1000,
+        "note": "First Income"
+    },
+    {
+        "email": "backend1@example.com",
+        "account": "Cash",
+        "type": "INCOME",
+        "category": "Salary",
+        "amount": 10000,
+        "note": "First Income"
+    },
+    {
+        "email": "backend@example.com",
+        "account": "Cash",
+        "type": "EXPENSE",
+        "category": "Food",
+        "amount": 2000,
+        "note": "Food"
+    },
+    {
+        "email": "backend@example.com",
+        "account": "Cash",
+        "type": "TRANSFER",
+        "to": "Bkash",
+        "amount": 2000,
+        "note": "t to Bkash"
+    }
+]
