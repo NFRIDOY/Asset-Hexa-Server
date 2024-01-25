@@ -237,7 +237,9 @@ async function run() {
 
         app.get('/accounts', async (req, res) => {
             try {
-                const cursor = accountsCollection.find()
+                const emailQuery = req.query.email;
+                const query = { email: emailQuery };
+                const cursor = accountsCollection.find(query)
                 const result = await cursor.toArray()
                 res.send(result)
             } catch (error) {
