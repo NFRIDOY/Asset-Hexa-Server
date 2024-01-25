@@ -106,7 +106,7 @@ async function run() {
                 // const newTransectionsAmount = req.body.amount;
                 const typeTransec = req.body?.type;
                 const filter = { account: account }
-                const options = { upsert: true }; 
+                const options = { upsert: true };
 
                 const queryAccount = { account: account, email: newTransectionsEmail };
                 // find the account
@@ -262,7 +262,7 @@ async function run() {
         })
 
         // DEMO /categories?type=INCOME
-        // DEMO /categories?type=EXPENSE
+        // DEMO /categories?type=EXPENSE&email=backend@example.com
         app.get('/categories', async (req, res) => {
             try {
                 // const catReq = req.body;
@@ -282,6 +282,26 @@ async function run() {
                 // }
             } catch (error) {
                 res.send(error.message);
+            }
+        })
+
+        // DEMO /catPi?type=INCOME&email=backend@example.com
+        // DEMO /catPi?type=EXPENSE&email=backend@example.com
+        app.get('/catPi', async (req, res) => {
+            try {
+                const transQuery = req.query.type;
+                const emailQuery = req.query.email;
+                const query = { type: transQuery, email: emailQuery};
+
+                const cursor = await transectionsCollection.find(query).toArray();
+
+                const catPiData = cursor?.map((cat) => cat?.amount);
+                const catPiLebel = cursor?.map((cat) => cat?.category);
+                // console.log(catPiData);
+                res.send({catPiData, catPiLebel});
+            } catch (error) {
+                res.send(error);
+
             }
         })
 

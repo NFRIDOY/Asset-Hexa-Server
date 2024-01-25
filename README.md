@@ -47,3 +47,8 @@ https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@ex
     }
 ]
 ```
+- API For PI chart separated by categorys https://asset-hexa-server.vercel.app/catPi?type=EXPENSE&email=backend@example.com
+- Example
+```
+https://asset-hexa-server.vercel.app/catPi?type=EXPENSE&email=backend@example.com
+```
