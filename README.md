@@ -2,7 +2,10 @@
 ## APIs
 - API: [https://asset-hexa-server.vercel.app](https://asset-hexa-server.vercel.app)
 - Post API for account: [https://asset-hexa-server.vercel.app/accounts](https://asset-hexa-server.vercel.app/accounts)
-- Get API for account: [https://asset-hexa-server.vercel.app/accounts](https://asset-hexa-server.vercel.app/accounts)
+- Get API for account. Example:
+```
+https://asset-hexa-server.vercel.app/accounts?email=front@example.com
+```
 
 - Post INCOME API for transections: [https://asset-hexa-server.vercel.app/transections?type=INCOME](https://asset-hexa-server.vercel.app/transections?type=INCOME)
 - Post EXPENSE API for transections: [https://asset-hexa-server.vercel.app/transections?type=EXPENSE](https://asset-hexa-server.vercel.app/transections?type=EXPENSE)

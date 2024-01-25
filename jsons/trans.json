@@ -4,8 +4,8 @@
         "account": "Cash",
         "type": "INCOME",
         "category": "Salary",
-        "amount": 5000,
-        "Notes": "First Income"
+        "amount": 1000,
+        "note": "First Income"
     },
     {
         "email": "backend1@example.com",
@@ -13,7 +13,7 @@
         "type": "INCOME",
         "category": "Salary",
         "amount": 10000,
-        "Notes": "First Income"
+        "note": "First Income"
     },
     {
         "email": "backend@example.com",
@@ -21,7 +21,7 @@
         "type": "EXPENSE",
         "category": "Food",
         "amount": 2000,
-        "Notes": "First Income"
+        "note": "Food"
     },
     {
         "email": "backend@example.com",
@@ -29,6 +29,6 @@
         "type": "TRANSFER",
         "to": "Bkash",
         "amount": 2000,
-        "Notes": "First Income"
+        "note": "t to Bkash"
     }
 ]
