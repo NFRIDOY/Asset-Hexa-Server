@@ -52,11 +52,18 @@ async function run() {
         })
 
         // read
-
+        // DEMO /transections?type=INCOME
+        // DEMO /transections?type=EXPENSE
         app.get('/transections', async (req, res) => {
-            const cursor = transectionsCollection.find()
-            const result = await cursor.toArray()
-            res.send(result)
+            try {
+                const transQuery = req.query.type;
+                const query = { type: transQuery };
+                const cursor = transectionsCollection.find(query)
+                const result = await cursor.toArray()
+                res.send(result)
+            } catch (error) {
+                res.status(500).json({message: error.message});
+            }
         })
 
         // delete
