@@ -19,4 +19,11 @@
         "account": "Wallet",
         "amount": 0
     }
+    ,
+    {
+        "email": "front@example.com",
+        "group": "Account",
+        "account": "Nagad",
+        "amount": 0
+    }
 ]

@@ -158,6 +158,7 @@ async function run() {
         // DEMO /transections?type=INCOME
         // DEMO /transections?type=EXPENSE
         // Example: https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
+        // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
         app.get('/transections', async (req, res) => {
             try {
                 const transQuery = req.query.type;
@@ -292,14 +293,34 @@ async function run() {
             try {
                 const transQuery = req.query.type;
                 const emailQuery = req.query.email;
-                const query = { type: transQuery, email: emailQuery};
+                const query = { type: transQuery, email: emailQuery };
 
                 const cursor = await transectionsCollection.find(query).toArray();
 
                 const catPiData = cursor?.map((cat) => cat?.amount);
                 const catPiLebel = cursor?.map((cat) => cat?.category);
                 // console.log(catPiData);
-                res.send({catPiData, catPiLebel});
+                res.send({ catPiData, catPiLebel });
+            } catch (error) {
+                res.send(error);
+
+            }
+        })
+
+        // DEMO /catPi?type=INCOME&email=backend@example.com
+        // DEMO /catPi?type=EXPENSE&email=backend@example.com
+        app.get('/accountPi', async (req, res) => {
+            try {
+                const transQuery = req.query.type;
+                const emailQuery = req.query.email;
+                const query = { type: transQuery, email: emailQuery };
+
+                const cursor = await transectionsCollection.find(query).toArray();
+
+                const accPiData = cursor?.map((acc) => acc?.amount);
+                const catPiLebel = cursor?.map((acc) => acc?.category);
+                // console.log(catPiData);
+                res.send({ catPiData: accPiData, catPiLebel });
             } catch (error) {
                 res.send(error);
 
