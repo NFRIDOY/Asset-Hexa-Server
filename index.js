@@ -107,10 +107,11 @@ async function run() {
                 const typeTransec = req.body?.type;
                 const filter = { account: account }
                 const options = { upsert: true };
-
+                
                 const queryAccount = { account: account, email: newTransectionsEmail };
                 // find the account
                 const accountfindOne = await accountsCollection.findOne(queryAccount);
+                const filterTo = { account: account }
                 // init amount of that account
                 let AmountOnAccount = accountfindOne?.amount;
 
@@ -120,9 +121,9 @@ async function run() {
                 else if (typeTransec === 'EXPENSE') {
                     AmountOnAccount = AmountOnAccount - newTransections?.amount;
                 }
-                // else if (typeTransec === 'TRANSFAR') {
-                //     AmountOnAccount = AmountOnAccount - newTransections?.amount;
-                // }
+                else if (typeTransec === 'TRANSFAR') {
+                    AmountOnAccount = AmountOnAccount - newTransections?.amount;
+                }
                 else {
                     AmountOnAccount = AmountOnAccount
                 }
@@ -308,18 +309,38 @@ async function run() {
 
         // DEMO /catPi?type=INCOME&email=backend@example.com
         // DEMO /catPi?type=EXPENSE&email=backend@example.com
+        // app.get('/accountPi', async (req, res) => {
+        //     try {
+        //         const transQuery = req.query.type;
+        //         const emailQuery = req.query.email;
+        //         const query = { type: transQuery, email: emailQuery };
+
+        //         const cursor = await transectionsCollection.find(query).toArray();
+
+        //         const accPiData = cursor?.map((acc) => acc?.amount);
+        //         const catPiLebel = cursor?.map((acc) => acc?.category);
+        //         // console.log(catPiData);
+        //         res.send({ catPiData: accPiData, catPiLebel });
+        //     } catch (error) {
+        //         res.send(error);
+
+        //     }
+        // })
+
+        //// TODO: Ridoy Vai 
+        // DEMO /accountPi?email=backend@example.com
+        // DEMO /accountPi?email=backend@example.com
         app.get('/accountPi', async (req, res) => {
             try {
-                const transQuery = req.query.type;
                 const emailQuery = req.query.email;
-                const query = { type: transQuery, email: emailQuery };
+                const query = { email: emailQuery};
 
-                const cursor = await transectionsCollection.find(query).toArray();
+                const cursor = await accountsCollection.find(query).toArray();
 
-                const accPiData = cursor?.map((acc) => acc?.amount);
-                const catPiLebel = cursor?.map((acc) => acc?.category);
+                const accPiData = cursor?.map((accAmount) => accAmount?.amount);
+                const accPiLebel = cursor?.map((accName) => accName?.account);
                 // console.log(catPiData);
-                res.send({ catPiData: accPiData, catPiLebel });
+                res.send({accPiData: accPiData, accPiLebel: accPiLebel});
             } catch (error) {
                 res.send(error);
 
