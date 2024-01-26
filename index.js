@@ -332,9 +332,8 @@ async function run() {
         // DEMO /accountPi?email=backend@example.com
         app.get('/accountPi', async (req, res) => {
             try {
-                const transQuery = req.query.type;
                 const emailQuery = req.query.email;
-                const query = { type: transQuery, email: emailQuery};
+                const query = { email: emailQuery};
 
                 const cursor = await accountsCollection.find(query).toArray();
 
