@@ -309,27 +309,28 @@ async function run() {
 
         // DEMO /catPi?type=INCOME&email=backend@example.com
         // DEMO /catPi?type=EXPENSE&email=backend@example.com
+        // app.get('/accountPi', async (req, res) => {
+        //     try {
+        //         const transQuery = req.query.type;
+        //         const emailQuery = req.query.email;
+        //         const query = { type: transQuery, email: emailQuery };
+
+        //         const cursor = await transectionsCollection.find(query).toArray();
+
+        //         const accPiData = cursor?.map((acc) => acc?.amount);
+        //         const catPiLebel = cursor?.map((acc) => acc?.category);
+        //         // console.log(catPiData);
+        //         res.send({ catPiData: accPiData, catPiLebel });
+        //     } catch (error) {
+        //         res.send(error);
+
+        //     }
+        // })
+
+        //// TODO: Ridoy Vai 
+        // DEMO /accountPi?email=backend@example.com
+        // DEMO /accountPi?email=backend@example.com
         app.get('/accountPi', async (req, res) => {
-            try {
-                const transQuery = req.query.type;
-                const emailQuery = req.query.email;
-                const query = { type: transQuery, email: emailQuery };
-
-                const cursor = await transectionsCollection.find(query).toArray();
-
-                const accPiData = cursor?.map((acc) => acc?.amount);
-                const catPiLebel = cursor?.map((acc) => acc?.category);
-                // console.log(catPiData);
-                res.send({ catPiData: accPiData, catPiLebel });
-            } catch (error) {
-                res.send(error);
-
-            }
-        })
-
-        // DEMO /accPi?email=backend@example.com
-        // DEMO /accPi?email=backend@example.com
-        app.get('/accPi', async (req, res) => {
             try {
                 const transQuery = req.query.type;
                 const emailQuery = req.query.email;
