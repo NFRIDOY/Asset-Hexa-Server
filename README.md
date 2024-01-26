@@ -7,8 +7,13 @@
 https://asset-hexa-server.vercel.app/accounts?email=front@example.com
 ```
 
-- Post INCOME API for transections: [https://asset-hexa-server.vercel.app/transections?type=INCOME](https://asset-hexa-server.vercel.app/transections?type=INCOME)
-- Post EXPENSE API for transections: [https://asset-hexa-server.vercel.app/transections?type=EXPENSE](https://asset-hexa-server.vercel.app/transections?type=EXPENSE)
+- Post INCOME API for transections: 
+- Post EXPENSE API for transections:
+- Example
+```
+Example: https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
+Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
+```
 
 - Get API for transections: [https://asset-hexa-server.vercel.app/transections](https://asset-hexa-server.vercel.app/transections)
 - Example:
