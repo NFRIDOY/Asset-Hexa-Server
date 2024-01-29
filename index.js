@@ -96,59 +96,104 @@ async function run() {
         //     }
         // })
         // DEMO: /transections?type=INCOME
-        // DEMO: /transections?type=EXPENSE
+        // DEMO: /transections?type=EXPENSE&email
         app.post('/transections', async (req, res) => {
             try {
                 // const id = req.params.id;
-                const account = req.body.account;
+                const account = req.body?.account;
                 const newTransections = req.body;
                 const newTransectionsEmail = req.body?.email;
                 // const newTransectionsAmount = req.body.amount;
                 const typeTransec = req.body?.type;
-                const filter = { account: account }
-                const options = { upsert: true };
-                
-                const queryAccount = { account: account, email: newTransectionsEmail };
-                // find the account
-                const accountfindOne = await accountsCollection.findOne(queryAccount);
-                const filterTo = { account: account }
-                // init amount of that account
-                let AmountOnAccount = accountfindOne?.amount;
+
+
+
+
 
                 if (typeTransec === 'INCOME') {
+                    const filter = { account: account }
+                    const options = { upsert: true };
+
+                    const queryAccount = { account: account, email: newTransectionsEmail };
+                    // find the account
+                    const accountfindOne = await accountsCollection.findOne(queryAccount);
+
+                    // init amount of that account
+                    let AmountOnAccount = accountfindOne?.amount;
+
                     AmountOnAccount = AmountOnAccount + newTransections?.amount;
+
+                    const transectionsUpdateAccount = {
+                        $set: {
+                            // TODO: update property
+                            amount: AmountOnAccount
+
+
+                        }
+                    }
+
+                    // insertOne into transections collection
+                    const resultTransec = await transectionsCollection.insertOne(newTransections);
+
+                    // update on account
+                    const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
+
+                    // respose
+                    const result = {
+                        resultTransec,
+                        resultAccount
+                    }
+                    return res.send(result)
                 }
                 else if (typeTransec === 'EXPENSE') {
+                    const filter = { account: account }
+                    const options = { upsert: true };
+
+                    const queryAccount = { account: account, email: newTransectionsEmail };
+
+                    // find the account
+                    const accountfindOne = await accountsCollection.findOne(queryAccount);
                     AmountOnAccount = AmountOnAccount - newTransections?.amount;
+
+                    const transectionsUpdateAccount = {
+                        $set: {
+                            // TODO: update property
+                            amount: AmountOnAccount
+
+
+                        }
+                    }
+
+                    // insertOne into transections collection
+                    const resultTransec = await transectionsCollection.insertOne(newTransections);
+
+                    // update on account
+                    const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
+
+                    // respose
+                    const result = {
+                        resultTransec,
+                        resultAccount
+                    }
+                    return res.send(result)
                 }
                 else if (typeTransec === 'TRANSFAR') {
+                    const filterTo = { account: account }
+                    const accountfindOneTo = await accountsCollection.findOne(queryAccount);
+                    let AmountOnAccountTo = accountfindOneTo?.amount;
                     AmountOnAccount = AmountOnAccount - newTransections?.amount;
+                    AmountOnAccountTo = AmountOnAccountTo + newTransections?.amount;
                 }
                 else {
                     AmountOnAccount = AmountOnAccount
+                    res.status(400).json({ error: "Error"});
                 }
 
-                const transectionsUpdateAccount = {
-                    $set: {
-                        // TODO: update property
-                        amount: AmountOnAccount
 
 
-                    }
-                }
 
-                // insertOne into transections collection
-                const resultTransec = await transectionsCollection.insertOne(newTransections);
 
-                // update on account
-                const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
 
-                // respose
-                const result = {
-                    resultTransec,
-                    resultAccount
-                }
-                res.send(result)
             } catch (error) {
                 res.send(error.message);
             }
@@ -333,14 +378,14 @@ async function run() {
         app.get('/accountPi', async (req, res) => {
             try {
                 const emailQuery = req.query.email;
-                const query = { email: emailQuery};
+                const query = { email: emailQuery };
 
                 const cursor = await accountsCollection.find(query).toArray();
 
                 const accPiData = cursor?.map((accAmount) => accAmount?.amount);
                 const accPiLebel = cursor?.map((accName) => accName?.account);
                 // console.log(catPiData);
-                res.send({accPiData: accPiData, accPiLebel: accPiLebel});
+                res.send({ accPiData: accPiData, accPiLebel: accPiLebel });
             } catch (error) {
                 res.send(error);
 

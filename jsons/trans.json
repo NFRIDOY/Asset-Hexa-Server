@@ -1,5 +1,6 @@
 [
     {
+        "date": "",
         "email": "backend@example.com",
         "account": "Cash",
         "type": "INCOME",
@@ -8,6 +9,7 @@
         "note": "First Income"
     },
     {
+        "date": "",
         "email": "backend1@example.com",
         "account": "Cash",
         "type": "INCOME",
@@ -16,6 +18,7 @@
         "note": "First Income"
     },
     {
+        "date": "",
         "email": "backend@example.com",
         "account": "Cash",
         "type": "EXPENSE",
@@ -24,6 +27,16 @@
         "note": "Food"
     },
     {
+        "date": "",
+        "email": "backend@example.com",
+        "account": "Cash",
+        "type": "TRANSFER",
+        "to": "Bkash",
+        "amount": 2000,
+        "note": "t to Bkash"
+    },
+    {
+        "date": "",
         "email": "backend@example.com",
         "account": "Cash",
         "type": "TRANSFER",
