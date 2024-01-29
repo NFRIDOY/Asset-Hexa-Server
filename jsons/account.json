@@ -5,7 +5,14 @@
         "account": "Cash",
         "amount": 0
     }
-    
+    ,
+    {
+        "email": "front@example.com",
+        "group": "Account",
+        "account": "Bkash",
+        "amount": 0
+    }
+    ,
     {
         "email": "front@example.com",
         "group": "Cash",
