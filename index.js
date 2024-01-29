@@ -30,6 +30,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
 
+
     try {
 
 
@@ -399,6 +400,7 @@ async function run() {
         // Ensures that the client will close when you finish/error
         // await client.close();
     }
+
   try {
     const database = client.db("assethexadb");
 
@@ -768,7 +770,6 @@ async function run() {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
-
 }
 run().catch(console.dir);
 
