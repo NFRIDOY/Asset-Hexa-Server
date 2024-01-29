@@ -37,12 +37,6 @@ async function run() {
     const transectionsCollection = database.collection("transections");
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
-
-    const usersCollection = database.collection("users");
-
-    const transectionsCollection = database.collection("transections");
-    const accountsCollection = database.collection("accounts");
-    const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
 
     // Save or modify user email, status in DB
