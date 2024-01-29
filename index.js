@@ -42,6 +42,7 @@ async function run() {
         const transectionsCollection = database.collection('transections')
         const accountsCollection = database.collection('accounts')
         const categoryCollection = database.collection('categoris')
+        const blogCollection = database.collection('blogs')
 
 
 
@@ -346,6 +347,33 @@ async function run() {
 
             }
         })
+
+        // for blog post
+        // create
+
+        app.post('/blogs', async (req, res) => {
+            try {
+                const newBlogs = req.body;
+                // console.log(newBlogs)
+                const result = await blogCollection.insertOne(newBlogs);
+                res.send(result)
+            } catch (error) {
+
+            }
+        })
+
+        // read
+
+        app.get('/blogs', async (req, res) => {
+            try {
+                const cursor = blogCollection.find()
+                const result = await cursor.toArray()
+                res.send(result)
+            } catch (error) {
+                res.send(error.message);
+            }
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
