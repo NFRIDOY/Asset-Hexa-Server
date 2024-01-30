@@ -765,6 +765,35 @@ async function run() {
       }
     });
 
+
+    // for blogs
+    // create
+
+    app.post('/blogs', async (req, res) => {
+        try {
+            const newBlogs = req.body;
+            // console.log(newBlogs)
+            const result = await blogCollection.insertOne(newBlogs);
+            res.send(result)
+        } catch (error) {
+
+        }
+    })
+
+
+    // read
+
+    app.get('/blogs', async (req, res) => {
+        try {
+            const cursor = blogCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        } catch (error) {
+            res.send(error.message);
+        }
+    })
+
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
