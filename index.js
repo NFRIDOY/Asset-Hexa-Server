@@ -85,9 +85,9 @@ async function run() {
 
     const usersCollection = database.collection('users')
 
-    const transectionsCollection = database.collection('transections')
-    const accountsCollection = database.collection('accounts')
-    const categoryCollection = database.collection('categoris')
+    // const transectionsCollection = database.collection('transections')
+    // const accountsCollection = database.collection('accounts')
+    // const categoryCollection = database.collection('categoris')
 
 
 
