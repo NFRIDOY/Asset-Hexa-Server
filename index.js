@@ -155,6 +155,8 @@ async function run() {
 
                     // find the account
                     const accountfindOne = await accountsCollection.findOne(queryAccount);
+                    
+                    let AmountOnAccount = accountfindOne?.amount;
                     AmountOnAccount = AmountOnAccount - newTransections?.amount;
 
                     const transectionsUpdateAccount = {
