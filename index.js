@@ -434,15 +434,15 @@ async function run() {
       }
     });
 
-    const getTotal = (array) => {
+    // const getTotal = (array) => {
 
-      let total = 0;
-      for (const iterator of array) {
+    //   let total = 0;
+    //   for (const iterator of array) {
         
-      }
+    //   }
 
-      return getTotal;
-    }
+    //   return getTotal;
+    // }
 
     ///NF RIDOY //
     //// get total income and total expnsecs
@@ -466,7 +466,7 @@ async function run() {
       const cursorIncome = await transectionsCollection.find(queryIncome).toArray();
       const cursorExpense = await transectionsCollection.find(queryExpense).toArray();
 
-      console.log("cursorIncome",cursorIncome);
+      // console.log("cursorIncome",cursorIncome);
       // console.log("cursorExpense",cursorExpense);
       const allTrasIncome = cursorIncome?.map(tr => parseFloat(tr?.amount));
       const allTrasExpense = cursorExpense?.map(tr => parseFloat(tr?.amount));
