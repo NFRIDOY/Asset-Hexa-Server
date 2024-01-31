@@ -434,6 +434,7 @@ async function run() {
       }
     });
 
+
     // const getTotal = (array) => {
 
     //   let total = 0;
@@ -443,6 +444,7 @@ async function run() {
 
     //   return getTotal;
     // }
+
 
     ///NF RIDOY //
     //// get total income and total expnsecs
