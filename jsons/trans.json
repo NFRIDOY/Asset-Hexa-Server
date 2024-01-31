@@ -25,10 +25,26 @@
     },
     {
         "email": "backend@example.com",
-        "account": "Cash",
+        "from": "Nagad",
         "type": "TRANSFER",
-        "to": "Bkash",
-        "amount": 2000,
-        "note": "t to Bkash"
+        "to": "Cash",
+        "amount": 100,
+        "note": "Nagad to Cash"
+    },
+    {
+        "email": "front@example.com",
+        "from": "Nagad",
+        "type": "TRANSFER",
+        "to": "Cash",
+        "amount": 100,
+        "note": "Nagad to Cash"
+    },
+    {
+        "email": "front@example.com",
+        "from": "Cash",
+        "type": "TRANSFER",
+        "to": "Nagad",
+        "amount": 100,
+        "note": "Nagad to Cash"
     }
 ]

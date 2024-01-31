@@ -88,7 +88,114 @@ async function run() {
     // })
     // DEMO: /transections?type=INCOME
     // DEMO: /transections?type=EXPENSE&email
-    app.post("/transections", async (req, res) => {
+    // app.post("/transections", async (req, res) => {
+    //   try {
+    //     // const id = req.params.id;
+    //     const account = req.body?.account;
+    //     const newTransections = req.body;
+    //     const newTransectionsEmail = req.body?.email;
+    //     // const newTransectionsAmount = req.body.amount;
+    //     const typeTransec = req.body?.type;
+
+    //     if (typeTransec === "INCOME") {
+    //       const filter = { account: account };
+    //       const options = { upsert: true };
+
+    //       const queryAccount = {
+    //         account: account,
+    //         email: newTransectionsEmail,
+    //       };
+    //       // find the account
+    //       const accountfindOne = await accountsCollection.findOne(queryAccount);
+
+    //       // init amount of that account
+    //       let AmountOnAccount = accountfindOne?.amount;
+
+    //       AmountOnAccount = AmountOnAccount + newTransections?.amount;
+
+    //       const transectionsUpdateAccount = {
+    //         $set: {
+    //           // TODO: update property
+    //           amount: AmountOnAccount,
+    //         },
+    //       };
+
+    //       // insertOne into transections collection
+    //       const resultTransec = await transectionsCollection.insertOne(
+    //         newTransections
+    //       );
+
+    //       // update on account
+    //       const resultAccount = await accountsCollection.updateOne(
+    //         filter,
+    //         transectionsUpdateAccount,
+    //         options
+    //       );
+
+    //       // respose
+    //       const result = {
+    //         resultTransec,
+    //         resultAccount,
+    //       };
+    //       return res.send(result);
+    //     } else if (typeTransec === "EXPENSE") {
+    //       const filter = { account: account };
+    //       const options = { upsert: true };
+
+    //       const queryAccount = {
+    //         account: account,
+    //         email: newTransectionsEmail,
+    //       };
+
+    //       // find the account
+    //       const accountfindOne = await accountsCollection.findOne(queryAccount);
+
+    //       let AmountOnAccount = accountfindOne?.amount;
+    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
+
+    //       const transectionsUpdateAccount = {
+    //         $set: {
+    //           // TODO: update property
+    //           amount: AmountOnAccount,
+    //         },
+    //       };
+
+    //       // insertOne into transections collection
+    //       const resultTransec = await transectionsCollection.insertOne(
+    //         newTransections
+    //       );
+
+    //       // update on account
+    //       const resultAccount = await accountsCollection.updateOne(
+    //         filter,
+    //         transectionsUpdateAccount,
+    //         options
+    //       );
+
+    //       // respose
+    //       const result = {
+    //         resultTransec,
+    //         resultAccount,
+    //       };
+    //       return res.send(result);
+    //     } else if (typeTransec === "TRANSFAR") {
+    //       const filterTo = { account: account };
+    //       const accountfindOneTo = await accountsCollection.findOne(
+    //         queryAccount
+    //       );
+    //       let AmountOnAccountTo = accountfindOneTo?.amount;
+    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
+    //       AmountOnAccountTo = AmountOnAccountTo + newTransections?.amount;
+    //     } else {
+    //       // AmountOnAccount = AmountOnAccount;
+    //       res.status(400).json({ error: "Error" });
+    //     }
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+    ////////////////////////////////////////////////////////////////NF RIDOY //
+    app.post('/transections', async (req, res) => {
       try {
         // const id = req.params.id;
         const account = req.body?.account;
@@ -97,14 +204,17 @@ async function run() {
         // const newTransectionsAmount = req.body.amount;
         const typeTransec = req.body?.type;
 
-        if (typeTransec === "INCOME") {
-          const filter = { account: account };
-          const options = { upsert: true };
+        const options = { upsert: false };
 
-          const queryAccount = {
-            account: account,
-            email: newTransectionsEmail,
-          };
+
+
+
+
+        if (typeTransec === 'INCOME') {
+          const filter = { account: account, email: newTransectionsEmail }
+
+
+          const queryAccount = { account: account, email: newTransectionsEmail };
           // find the account
           const accountfindOne = await accountsCollection.findOne(queryAccount);
 
@@ -116,36 +226,30 @@ async function run() {
           const transectionsUpdateAccount = {
             $set: {
               // TODO: update property
-              amount: AmountOnAccount,
-            },
-          };
+              amount: AmountOnAccount
+
+
+            }
+          }
 
           // insertOne into transections collection
-          const resultTransec = await transectionsCollection.insertOne(
-            newTransections
-          );
+          const resultTransec = await transectionsCollection.insertOne(newTransections);
 
           // update on account
-          const resultAccount = await accountsCollection.updateOne(
-            filter,
-            transectionsUpdateAccount,
-            options
-          );
+          const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
 
           // respose
           const result = {
             resultTransec,
-            resultAccount,
-          };
-          return res.send(result);
-        } else if (typeTransec === "EXPENSE") {
-          const filter = { account: account };
-          const options = { upsert: true };
+            resultAccount
+          }
+          return res.send(result)
+        }
+        else if (typeTransec === 'EXPENSE') {
+          const filter = { account: account }
+          // const options = { upsert: true };
 
-          const queryAccount = {
-            account: account,
-            email: newTransectionsEmail,
-          };
+          const queryAccount = { account: account, email: newTransectionsEmail };
 
           // find the account
           const accountfindOne = await accountsCollection.findOne(queryAccount);
@@ -156,55 +260,110 @@ async function run() {
           const transectionsUpdateAccount = {
             $set: {
               // TODO: update property
-              amount: AmountOnAccount,
-            },
-          };
+              amount: AmountOnAccount
+
+
+            }
+          }
 
           // insertOne into transections collection
-          const resultTransec = await transectionsCollection.insertOne(
-            newTransections
-          );
+          const resultTransec = await transectionsCollection.insertOne(newTransections);
 
           // update on account
-          const resultAccount = await accountsCollection.updateOne(
-            filter,
-            transectionsUpdateAccount,
-            options
-          );
+          const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
 
           // respose
           const result = {
             resultTransec,
-            resultAccount,
-          };
-          return res.send(result);
-        } else if (typeTransec === "TRANSFAR") {
-          const filterTo = { account: account };
-          const accountfindOneTo = await accountsCollection.findOne(
-            queryAccount
-          );
+            resultAccount
+          }
+          return res.send(result)
+        }
+        else if (typeTransec === 'TRANSFER') {
+          const fiterFrom = { account: req.body?.from, email: newTransectionsEmail };
+
+          const filterTo = { account: req.body?.to, email: newTransectionsEmail }
+
+          // find the account
+          const AccountFrom = await accountsCollection.findOne(fiterFrom);
+          const accountfindOneTo = await accountsCollection.findOne(filterTo);
+
+          // output 
+          // console.log("acc From", AccountFrom);
+          // console.log("acc To", accountfindOneTo);
+
+          //set the account amount
+          let AmountOnAccountForm = AccountFrom?.amount;
+
           let AmountOnAccountTo = accountfindOneTo?.amount;
-          AmountOnAccount = AmountOnAccount - newTransections?.amount;
+          AmountOnAccountForm = AmountOnAccountForm - newTransections?.amount;
           AmountOnAccountTo = AmountOnAccountTo + newTransections?.amount;
-        } else {
-          AmountOnAccount = AmountOnAccount;
+
+          const transectionsUpdateAccFrom = {
+            $set: {
+              // TODO: update property
+              amount: AmountOnAccountForm
+
+
+            }
+          }
+          const transectionsUpdateAccTo = {
+            $set: {
+              // TODO: update property
+              amount: AmountOnAccountTo
+
+
+            }
+          }
+
+          // insertOne into transections collection
+          const resultTransec = await transectionsCollection.insertOne(newTransections);
+
+          // update on account Form
+          const resultAccountForm = await accountsCollection.updateOne(fiterFrom, transectionsUpdateAccFrom, options);
+
+          // update on account to
+          const resultAccountTo = await accountsCollection.updateOne(filterTo, transectionsUpdateAccTo, options);
+
+
+          res.send({ resultTransec, resultAccountForm, resultAccountTo });
+
+        }
+        else {
+          // AmountOnAccount = AmountOnAccount
           res.status(400).json({ error: "Error" });
         }
+
+
+
+
+
+
       } catch (error) {
         res.send(error.message);
       }
-    });
+    })
 
     // read
     // DEMO /transections?type=INCOME
     // DEMO /transections?type=EXPENSE
     // Example: https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
+    // Example: https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@example.com)
+    // Example: https://asset-hexa-server.vercel.app/transections?&email=backend@example.com) => all translations
     app.get("/transections", async (req, res) => {
       try {
         const transQuery = req.query.type;
         const emailQuery = req.query.email;
-        const query = { type: transQuery, email: emailQuery };
+        let query = {}
+        console.log(transQuery);
+        // console.log(emailQuery);
+        if (transQuery) {
+          query = { type: transQuery, email: emailQuery };
+        }
+        else {
+          query = {email: emailQuery}
+        }
         const cursor = transectionsCollection.find(query);
         const result = await cursor.toArray();
         res.send(result);
@@ -212,6 +371,8 @@ async function run() {
         res.status(500).json({ message: error.message });
       }
     });
+
+
 
     // delete
 
@@ -264,6 +425,31 @@ async function run() {
       }
     });
 
+    //// get total income and total expnsecs
+    //// DEMO// /transections/totalInExp?email=front@example.com
+    app.get('/transections/totalInExp', async (req, res) => {
+      const userQueryEmail = req.query.email;
+
+      const query = { email: userQueryEmail };
+      // const options = {
+      //   // Sort returned documents in ascending order by title (A->Z)
+      //   sort: { title: 1 },
+      //   // Include only the `title` and `imdb` fields in each returned document
+      //   projection: { _id: 0, title: 1, imdb: 1 },
+      // };
+
+      // Execute query 
+      const cursor = await transectionsCollection.findone(query).toArray();
+
+      const allTras = cursor?.map(tr => tr?.amount);
+
+      console.log(allTras);
+
+      res.send(cursor);
+
+
+    })
+
     // for accounts
     // create
 
@@ -273,7 +459,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -519,63 +705,63 @@ async function run() {
     // })
     // DEMO: /transections?type=INCOME
     // DEMO: /transections?type=EXPENSE
-    app.post("/transections", async (req, res) => {
-      try {
-        // const id = req.params.id;
-        const account = req.body.account;
-        const newTransections = req.body;
-        const newTransectionsEmail = req.body?.email;
-        // const newTransectionsAmount = req.body.amount;
-        const typeTransec = req.body?.type;
-        const filter = { account: account };
-        const options = { upsert: true };
+    // app.post("/transections", async (req, res) => {
+    //   try {
+    //     // const id = req.params.id;
+    //     const account = req.body.account;
+    //     const newTransections = req.body;
+    //     const newTransectionsEmail = req.body?.email;
+    //     // const newTransectionsAmount = req.body.amount;
+    //     const typeTransec = req.body?.type;
+    //     const filter = { account: account };
+    //     const options = { upsert: true };
 
-        const queryAccount = { account: account, email: newTransectionsEmail };
-        // find the account
-        const accountfindOne = await accountsCollection.findOne(queryAccount);
-        const filterTo = { account: account };
-        // init amount of that account
-        let AmountOnAccount = accountfindOne?.amount;
+    //     const queryAccount = { account: account, email: newTransectionsEmail };
+    //     // find the account
+    //     const accountfindOne = await accountsCollection.findOne(queryAccount);
+    //     const filterTo = { account: account };
+    //     // init amount of that account
+    //     let AmountOnAccount = accountfindOne?.amount;
 
-        if (typeTransec === "INCOME") {
-          AmountOnAccount = AmountOnAccount + newTransections?.amount;
-        } else if (typeTransec === "EXPENSE") {
-          AmountOnAccount = AmountOnAccount - newTransections?.amount;
-        } else if (typeTransec === "TRANSFAR") {
-          AmountOnAccount = AmountOnAccount - newTransections?.amount;
-        } else {
-          AmountOnAccount = AmountOnAccount;
-        }
+    //     if (typeTransec === "INCOME") {
+    //       AmountOnAccount = AmountOnAccount + newTransections?.amount;
+    //     } else if (typeTransec === "EXPENSE") {
+    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
+    //     } else if (typeTransec === "TRANSFAR") {
+    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
+    //     } else {
+    //       AmountOnAccount = AmountOnAccount;
+    //     }
 
-        const transectionsUpdateAccount = {
-          $set: {
-            // TODO: update property
-            amount: AmountOnAccount,
-          },
-        };
+    //     const transectionsUpdateAccount = {
+    //       $set: {
+    //         // TODO: update property
+    //         amount: AmountOnAccount,
+    //       },
+    //     };
 
-        // insertOne into transections collection
-        const resultTransec = await transectionsCollection.insertOne(
-          newTransections
-        );
+    //     // insertOne into transections collection
+    //     const resultTransec = await transectionsCollection.insertOne(
+    //       newTransections
+    //     );
 
-        // update on account
-        const resultAccount = await accountsCollection.updateOne(
-          filter,
-          transectionsUpdateAccount,
-          options
-        );
+    //     // update on account
+    //     const resultAccount = await accountsCollection.updateOne(
+    //       filter,
+    //       transectionsUpdateAccount,
+    //       options
+    //     );
 
-        // respose
-        const result = {
-          resultTransec,
-          resultAccount,
-        };
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    //     // respose
+    //     const result = {
+    //       resultTransec,
+    //       resultAccount,
+    //     };
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     // read
     // DEMO /transections?type=INCOME
@@ -655,7 +841,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -768,6 +954,37 @@ async function run() {
         res.send(error);
       }
     });
+
+
+    // for blogs
+    // create
+
+    app.post('/blogs', async (req, res) => {
+      try {
+        const newBlogs = req.body;
+        // console.log(newBlogs)
+        const result = await blogCollection.insertOne(newBlogs);
+        res.send(result)
+      } catch (error) {
+
+      }
+    })
+
+
+    // read
+
+    app.get('/blogs', async (req, res) => {
+      try {
+        const cursor = blogCollection.find()
+        const result = await cursor.toArray()
+        res.send(result)
+      } catch (error) {
+        res.send(error.message);
+      }
+    })
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
