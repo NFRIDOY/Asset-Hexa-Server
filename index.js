@@ -371,8 +371,9 @@ async function run() {
         // console.log(emailQuery);
         if (transQuery) {
           query = { type: transQuery, email: emailQuery };
-        } else {
-          query = { email: emailQuery };
+        }
+        else {
+          query = { email: emailQuery }
         }
         const cursor = transectionsCollection.find(query);
         const result = await cursor.toArray();
@@ -433,12 +434,26 @@ async function run() {
       }
     });
 
+    const getTotal = (array) => {
+
+      let total = 0;
+      for (const iterator of array) {
+        
+      }
+
+      return getTotal;
+    }
+
+    ///NF RIDOY //
     //// get total income and total expnsecs
     //// DEMO// /transections/totalInExp?email=front@example.com
-    app.get("/transections/totalInExp", async (req, res) => {
+
+    app.get('/totalInExp', async (req, res) => {
+
       const userQueryEmail = req.query.email;
 
-      const query = { email: userQueryEmail };
+      const queryIncome = { type: "INCOME", email: userQueryEmail };
+      const queryExpense = { type: "EXPENSE", email: userQueryEmail };
       // const options = {
       //   // Sort returned documents in ascending order by title (A->Z)
       //   sort: { title: 1 },
@@ -446,15 +461,37 @@ async function run() {
       //   projection: { _id: 0, title: 1, imdb: 1 },
       // };
 
-      // Execute query
-      const cursor = await transectionsCollection.findone(query).toArray();
 
-      const allTras = cursor?.map((tr) => tr?.amount);
+      // Execute query 
+      const cursorIncome = await transectionsCollection.find(queryIncome).toArray();
+      const cursorExpense = await transectionsCollection.find(queryExpense).toArray();
 
-      console.log(allTras);
+      console.log("cursorIncome",cursorIncome);
+      // console.log("cursorExpense",cursorExpense);
+      const allTrasIncome = cursorIncome?.map(tr => parseFloat(tr?.amount));
+      const allTrasExpense = cursorExpense?.map(tr => parseFloat(tr?.amount));
 
-      res.send(cursor);
-    });
+      const totalIncome = allTrasIncome?.reduce((obj1, obj2) => {
+        return obj1 + obj2;
+      }, 0);
+      const totalExpense = allTrasExpense?.reduce((obj1, obj2) => {
+        return obj1 + obj2;
+      }, 0);
+
+      // const allTrasTotal = allTras?.reduce((obj1, obj2) => {
+      //   return obj1?.amount + obj2?.amount;
+      // }, 0);
+
+
+      // console.log("all trans", allTras);
+      // console.log("all trans", allTrasTotal);
+
+
+      res.send({totalIncome, totalExpense});
+
+
+    })
+
 
     // for accounts
     // create
