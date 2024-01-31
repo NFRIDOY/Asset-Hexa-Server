@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
+const { getIncomeExpenseChartData } = require("./utils/chatData");
 
 // req
 app.use(express.json());
@@ -195,7 +196,7 @@ async function run() {
     //   }
     // });
     ////////////////////////////////////////////////////////////////NF RIDOY //
-    app.post('/transections', async (req, res) => {
+    app.post("/transections", async (req, res) => {
       try {
         // const id = req.params.id;
         const account = req.body?.account;
@@ -206,15 +207,13 @@ async function run() {
 
         const options = { upsert: false };
 
+        if (typeTransec === "INCOME") {
+          const filter = { account: account, email: newTransectionsEmail };
 
-
-
-
-        if (typeTransec === 'INCOME') {
-          const filter = { account: account, email: newTransectionsEmail }
-
-
-          const queryAccount = { account: account, email: newTransectionsEmail };
+          const queryAccount = {
+            account: account,
+            email: newTransectionsEmail,
+          };
           // find the account
           const accountfindOne = await accountsCollection.findOne(queryAccount);
 
@@ -226,30 +225,36 @@ async function run() {
           const transectionsUpdateAccount = {
             $set: {
               // TODO: update property
-              amount: AmountOnAccount
-
-
-            }
-          }
+              amount: AmountOnAccount,
+            },
+          };
 
           // insertOne into transections collection
-          const resultTransec = await transectionsCollection.insertOne(newTransections);
+          const resultTransec = await transectionsCollection.insertOne(
+            newTransections
+          );
 
           // update on account
-          const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
+          const resultAccount = await accountsCollection.updateOne(
+            filter,
+            transectionsUpdateAccount,
+            options
+          );
 
           // respose
           const result = {
             resultTransec,
-            resultAccount
-          }
-          return res.send(result)
-        }
-        else if (typeTransec === 'EXPENSE') {
-          const filter = { account: account }
+            resultAccount,
+          };
+          return res.send(result);
+        } else if (typeTransec === "EXPENSE") {
+          const filter = { account: account };
           // const options = { upsert: true };
 
-          const queryAccount = { account: account, email: newTransectionsEmail };
+          const queryAccount = {
+            account: account,
+            email: newTransectionsEmail,
+          };
 
           // find the account
           const accountfindOne = await accountsCollection.findOne(queryAccount);
@@ -260,35 +265,44 @@ async function run() {
           const transectionsUpdateAccount = {
             $set: {
               // TODO: update property
-              amount: AmountOnAccount
-
-
-            }
-          }
+              amount: AmountOnAccount,
+            },
+          };
 
           // insertOne into transections collection
-          const resultTransec = await transectionsCollection.insertOne(newTransections);
+          const resultTransec = await transectionsCollection.insertOne(
+            newTransections
+          );
 
           // update on account
-          const resultAccount = await accountsCollection.updateOne(filter, transectionsUpdateAccount, options);
+          const resultAccount = await accountsCollection.updateOne(
+            filter,
+            transectionsUpdateAccount,
+            options
+          );
 
           // respose
           const result = {
             resultTransec,
-            resultAccount
-          }
-          return res.send(result)
-        }
-        else if (typeTransec === 'TRANSFER') {
-          const fiterFrom = { account: req.body?.from, email: newTransectionsEmail };
+            resultAccount,
+          };
+          return res.send(result);
+        } else if (typeTransec === "TRANSFER") {
+          const fiterFrom = {
+            account: req.body?.from,
+            email: newTransectionsEmail,
+          };
 
-          const filterTo = { account: req.body?.to, email: newTransectionsEmail }
+          const filterTo = {
+            account: req.body?.to,
+            email: newTransectionsEmail,
+          };
 
           // find the account
           const AccountFrom = await accountsCollection.findOne(fiterFrom);
           const accountfindOneTo = await accountsCollection.findOne(filterTo);
 
-          // output 
+          // output
           // console.log("acc From", AccountFrom);
           // console.log("acc To", accountfindOneTo);
 
@@ -302,47 +316,44 @@ async function run() {
           const transectionsUpdateAccFrom = {
             $set: {
               // TODO: update property
-              amount: AmountOnAccountForm
-
-
-            }
-          }
+              amount: AmountOnAccountForm,
+            },
+          };
           const transectionsUpdateAccTo = {
             $set: {
               // TODO: update property
-              amount: AmountOnAccountTo
-
-
-            }
-          }
+              amount: AmountOnAccountTo,
+            },
+          };
 
           // insertOne into transections collection
-          const resultTransec = await transectionsCollection.insertOne(newTransections);
+          const resultTransec = await transectionsCollection.insertOne(
+            newTransections
+          );
 
           // update on account Form
-          const resultAccountForm = await accountsCollection.updateOne(fiterFrom, transectionsUpdateAccFrom, options);
+          const resultAccountForm = await accountsCollection.updateOne(
+            fiterFrom,
+            transectionsUpdateAccFrom,
+            options
+          );
 
           // update on account to
-          const resultAccountTo = await accountsCollection.updateOne(filterTo, transectionsUpdateAccTo, options);
-
+          const resultAccountTo = await accountsCollection.updateOne(
+            filterTo,
+            transectionsUpdateAccTo,
+            options
+          );
 
           res.send({ resultTransec, resultAccountForm, resultAccountTo });
-
-        }
-        else {
+        } else {
           // AmountOnAccount = AmountOnAccount
           res.status(400).json({ error: "Error" });
         }
-
-
-
-
-
-
       } catch (error) {
         res.send(error.message);
       }
-    })
+    });
 
     // read
     // DEMO /transections?type=INCOME
@@ -355,14 +366,13 @@ async function run() {
       try {
         const transQuery = req.query.type;
         const emailQuery = req.query.email;
-        let query = {}
+        let query = {};
         // console.log(transQuery);
         // console.log(emailQuery);
         if (transQuery) {
           query = { type: transQuery, email: emailQuery };
-        }
-        else {
-          query = {email: emailQuery}
+        } else {
+          query = { email: emailQuery };
         }
         const cursor = transectionsCollection.find(query);
         const result = await cursor.toArray();
@@ -371,8 +381,6 @@ async function run() {
         res.status(500).json({ message: error.message });
       }
     });
-
-
 
     // delete
 
@@ -427,7 +435,7 @@ async function run() {
 
     //// get total income and total expnsecs
     //// DEMO// /transections/totalInExp?email=front@example.com
-    app.get('/transections/totalInExp', async (req, res) => {
+    app.get("/transections/totalInExp", async (req, res) => {
       const userQueryEmail = req.query.email;
 
       const query = { email: userQueryEmail };
@@ -438,17 +446,15 @@ async function run() {
       //   projection: { _id: 0, title: 1, imdb: 1 },
       // };
 
-      // Execute query 
+      // Execute query
       const cursor = await transectionsCollection.findone(query).toArray();
 
-      const allTras = cursor?.map(tr => tr?.amount);
+      const allTras = cursor?.map((tr) => tr?.amount);
 
       console.log(allTras);
 
       res.send(cursor);
-
-
-    })
+    });
 
     // for accounts
     // create
@@ -459,7 +465,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -610,61 +616,89 @@ async function run() {
       res.send(result);
     });
 
+    //todo Income Expense chart data
+    // Chart data for accounts
     app.get("/chartData/:email", async (req, res) => {
       const { email } = req.params;
-      // console.log(email);
       const query = { email: email };
 
-      // Find all data that a user has
-      const singlePersonData = await accountsCollection.find(query).toArray();
+      try {
+        // Find all data that a user has
+        const singlePersonData = await accountsCollection.find(query).toArray();
 
-      /***************  CASH ***************/
-      // Filter by group name "Cash"
-      const cashes = singlePersonData.filter(
-        (account) => account.group === "Cash"
-      );
-      // Cash total
-      const cashTotal = cashes.reduce((acc, cash) => {
-        return acc + parseFloat(cash?.amount);
-      }, 0);
+        /***************  CASH ***************/
+        const cashes = singlePersonData.filter(
+          (account) => account.group === "Cash"
+        );
 
-      /***************  ACCOUNT ***************/
-      // Filter by group name "Account"
-      const accounts = singlePersonData.filter(
-        (account) => account.group === "Account"
-      );
-      // Cash Account
-      const accountTotal = accounts.reduce((acc, account) => {
-        return acc + parseFloat(account?.amount);
-      }, 0);
+        /***************  ACCOUNT ***************/
+        const accounts = singlePersonData.filter(
+          (account) => account.group === "Account"
+        );
 
-      /***************  LOAN ***************/
-      // Filter by group name "Loan"
-      const loans = singlePersonData.filter(
-        (account) => account.group === "Loan"
-      );
-      // Loan total
-      const loanTotal = loans.reduce((acc, Loan) => {
-        return acc + parseFloat(Loan?.amount);
-      }, 0);
+        /***************  LOAN ***************/
+        const loans = singlePersonData.filter(
+          (account) => account.group === "Loan"
+        );
 
-      /***************  Saving ***************/
-      // Filter by group name "Saving"
-      const savings = singlePersonData.filter(
-        (account) => account.group === "Saving"
-      );
-      // Savings total
-      const savingTotal = savings.reduce((acc, Saving) => {
-        return acc + parseFloat(Saving?.amount);
-      }, 0);
+        /***************  Saving ***************/
+        const savings = singlePersonData.filter(
+          (account) => account.group === "Saving"
+        );
 
-      res.send([
-        { name: "Cash", value: cashTotal },
-        { name: "Account", value: accountTotal },
-        { name: "Loan", value: loanTotal },
-        { name: "Saving", value: savingTotal },
-      ]);
+        const totalFunction = async (cashes, accounts, loans, savings) => {
+          const cashTotal = cashes.reduce(
+            (acc, cash) => acc + parseFloat(cash?.amount),
+            0
+          );
+          const accountTotal = accounts.reduce(
+            (acc, account) => acc + parseFloat(account?.amount),
+            0
+          );
+          const loanTotal = loans.reduce(
+            (acc, Loan) => acc + parseFloat(Loan?.amount),
+            0
+          );
+          const savingTotal = savings.reduce(
+            (acc, Saving) => acc + parseFloat(Saving?.amount),
+            0
+          );
+          const data = [
+            { name: "Cash", value: cashTotal },
+            { name: "Account", value: accountTotal },
+            { name: "Loan", value: loanTotal },
+            { name: "Saving", value: savingTotal },
+          ];
+          return data;
+        };
+        const accountData = await totalFunction(
+          cashes,
+          accounts,
+          loans,
+          savings
+        );
+        const incomeData = await getIncomeExpenseChartData(
+          email,
+          transectionsCollection,
+          "INCOME"
+        );
+        const expenseData = await getIncomeExpenseChartData(
+          email,
+          transectionsCollection,
+          "EXPENSE"
+        );
+
+        res.send({ accountData, incomeData, expenseData });
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+      }
     });
+
+    // async function sendResponseAfterCalculations(res, chartData) {
+    //   // Wait for the response to be sent
+    //   await res.send(chartData);
+    // }
 
     // Get all users
     app.get("/users", async (req, res) => {
@@ -828,7 +862,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -942,36 +976,29 @@ async function run() {
       }
     });
 
-
     // for blogs
     // create
 
-    app.post('/blogs', async (req, res) => {
+    app.post("/blogs", async (req, res) => {
       try {
         const newBlogs = req.body;
         // console.log(newBlogs)
         const result = await blogCollection.insertOne(newBlogs);
-        res.send(result)
-      } catch (error) {
-
-      }
-    })
-
+        res.send(result);
+      } catch (error) {}
+    });
 
     // read
 
-    app.get('/blogs', async (req, res) => {
+    app.get("/blogs", async (req, res) => {
       try {
-        const cursor = blogCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
+        const cursor = blogCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
       } catch (error) {
         res.send(error.message);
       }
-    })
-
-
-
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
