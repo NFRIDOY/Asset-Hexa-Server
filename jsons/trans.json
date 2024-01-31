@@ -38,5 +38,13 @@
         "to": "Cash",
         "amount": 100,
         "note": "Nagad to Cash"
+    },
+    {
+        "email": "front@example.com",
+        "from": "Cash",
+        "type": "TRANSFER",
+        "to": "Nagad",
+        "amount": 100,
+        "note": "Nagad to Cash"
     }
 ]
