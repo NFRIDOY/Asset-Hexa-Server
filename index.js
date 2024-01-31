@@ -426,59 +426,72 @@ async function run() {
 
     app.get("/chartData/:email", async (req, res) => {
       const { email } = req.params;
-      // console.log(email);
       const query = { email: email };
 
-      // Find all data that a user has
-      const singlePersonData = await accountsCollection.find(query).toArray();
+      try {
+        // Find all data that a user has
+        const singlePersonData = await accountsCollection.find(query).toArray();
 
-      /***************  CASH ***************/
-      // Filter by group name "Cash"
-      const cashes = singlePersonData.filter(
-        (account) => account.group === "Cash"
-      );
-      // Cash total
-      const cashTotal = cashes.reduce((acc, cash) => {
-        return acc + parseFloat(cash?.amount);
-      }, 0);
+        /***************  CASH ***************/
+        const cashes = singlePersonData.filter(
+          (account) => account.group === "Cash"
+        );
 
-      /***************  ACCOUNT ***************/
-      // Filter by group name "Account"
-      const accounts = singlePersonData.filter(
-        (account) => account.group === "Account"
-      );
-      // Cash Account
-      const accountTotal = accounts.reduce((acc, account) => {
-        return acc + parseFloat(account?.amount);
-      }, 0);
+        /***************  ACCOUNT ***************/
+        const accounts = singlePersonData.filter(
+          (account) => account.group === "Account"
+        );
 
-      /***************  LOAN ***************/
-      // Filter by group name "Loan"
-      const loans = singlePersonData.filter(
-        (account) => account.group === "Loan"
-      );
-      // Loan total
-      const loanTotal = loans.reduce((acc, Loan) => {
-        return acc + parseFloat(Loan?.amount);
-      }, 0);
+        /***************  LOAN ***************/
+        const loans = singlePersonData.filter(
+          (account) => account.group === "Loan"
+        );
 
-      /***************  Saving ***************/
-      // Filter by group name "Saving"
-      const savings = singlePersonData.filter(
-        (account) => account.group === "Saving"
-      );
-      // Savings total
-      const savingTotal = savings.reduce((acc, Saving) => {
-        return acc + parseFloat(Saving?.amount);
-      }, 0);
+        /***************  Saving ***************/
+        const savings = singlePersonData.filter(
+          (account) => account.group === "Saving"
+        );
 
-      res.send([
-        { name: "Cash", value: cashTotal },
-        { name: "Account", value: accountTotal },
-        { name: "Loan", value: loanTotal },
-        { name: "Saving", value: savingTotal },
-      ]);
+        const totalFunction = async (cashes, accounts, loans, savings) => {
+          const cashTotal = cashes.reduce(
+            (acc, cash) => acc + parseFloat(cash?.amount),
+            0
+          );
+          const accountTotal = accounts.reduce(
+            (acc, account) => acc + parseFloat(account?.amount),
+            0
+          );
+          const loanTotal = loans.reduce(
+            (acc, Loan) => acc + parseFloat(Loan?.amount),
+            0
+          );
+          const savingTotal = savings.reduce(
+            (acc, Saving) => acc + parseFloat(Saving?.amount),
+            0
+          );
+          const data = [
+            { name: "Cash", value: cashTotal },
+            { name: "Account", value: accountTotal },
+            { name: "Loan", value: loanTotal },
+            { name: "Saving", value: savingTotal },
+          ];
+          return data;
+        };
+        const chartData = await totalFunction(cashes, accounts, loans, savings);
+
+        // Wait for all totals to be calculated
+
+        res.send(chartData);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+      }
     });
+
+    // async function sendResponseAfterCalculations(res, chartData) {
+    //   // Wait for the response to be sent
+    //   await res.send(chartData);
+    // }
 
     // Get all users
     app.get("/users", async (req, res) => {
