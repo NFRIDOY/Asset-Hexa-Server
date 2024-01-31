@@ -367,7 +367,7 @@ async function run() {
         const transQuery = req.query.type;
         const emailQuery = req.query.email;
         let query = {};
-        console.log(transQuery);
+        // console.log(transQuery);
         // console.log(emailQuery);
         if (transQuery) {
           query = { type: transQuery, email: emailQuery };
