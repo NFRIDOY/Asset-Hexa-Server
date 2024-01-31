@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
+const { getIncomeExpenseChartData } = require("./utils/chatData");
 
 // req
 app.use(express.json());
@@ -20,7 +21,6 @@ app.use(
 );
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { getIncomeExpenseChartData } = require("./utils/chatData");
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.mq17fxg.mongodb.net/?retryWrites=true&w=majority`;
 const uri = process.env.URI;
 
