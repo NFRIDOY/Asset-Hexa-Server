@@ -1,0 +1,66 @@
+[
+    {
+        "email": "backend@example.com",
+        "account": "Cash",
+        "type": "INCOME",
+        "category": "Salary",
+        "amount": 1000,
+        "note": "First Income"
+    },
+    {
+        "email": "backend1@example.com",
+        "account": "Cash",
+        "type": "INCOME",
+        "category": "Salary",
+        "amount": 10000,
+        "note": "First Income"
+    },
+    {
+        "email": "backend@example.com",
+        "account": "Cash",
+        "type": "EXPENSE",
+        "category": "Food",
+        "amount": 2000,
+        "note": "Food"
+    },
+    {
+        "email": "backend@example.com",
+        "from": "Nagad",
+        "type": "TRANSFER",
+        "to": "Cash",
+        "amount": 100,
+        "note": "Nagad to Cash"
+    },
+    {
+        "email": "front@example.com",
+        "from": "Nagad",
+        "type": "TRANSFER",
+        "to": "Cash",
+        "amount": 100,
+        "note": "Nagad to Cash"
+    },
+    {
+        "email": "front@example.com",
+        "from": "Cash",
+        "type": "TRANSFER",
+        "to": "Nagad",
+        "amount": 100,
+        "note": "Nagad to Cash"
+    },
+    {
+        "email": "front@example.com",
+        "account": "Cash",
+        "type": "INCOME",
+        "category": "Salary",
+        "amount": 5000,
+        "note": "First Income"
+    },
+    {
+        "email": "front@example.com",
+        "account": "Cash",
+        "type": "EXPENSE",
+        "category": "Salary",
+        "amount": 200,
+        "note": "Food"
+    }
+]
