@@ -371,9 +371,8 @@ async function run() {
         // console.log(emailQuery);
         if (transQuery) {
           query = { type: transQuery, email: emailQuery };
-        }
-        else {
-          query = { email: emailQuery }
+        } else {
+          query = { email: emailQuery };
         }
         const cursor = transectionsCollection.find(query);
         const result = await cursor.toArray();
@@ -434,24 +433,21 @@ async function run() {
       }
     });
 
-
     // const getTotal = (array) => {
 
     //   let total = 0;
     //   for (const iterator of array) {
-        
+
     //   }
 
     //   return getTotal;
     // }
 
-
     ///NF RIDOY //
     //// get total income and total expnsecs
     //// DEMO// /transections/totalInExp?email=front@example.com
 
-    app.get('/totalInExp', async (req, res) => {
-
+    app.get("/totalInExp", async (req, res) => {
       const userQueryEmail = req.query.email;
 
       const queryIncome = { type: "INCOME", email: userQueryEmail };
@@ -463,15 +459,18 @@ async function run() {
       //   projection: { _id: 0, title: 1, imdb: 1 },
       // };
 
-
-      // Execute query 
-      const cursorIncome = await transectionsCollection.find(queryIncome).toArray();
-      const cursorExpense = await transectionsCollection.find(queryExpense).toArray();
+      // Execute query
+      const cursorIncome = await transectionsCollection
+        .find(queryIncome)
+        .toArray();
+      const cursorExpense = await transectionsCollection
+        .find(queryExpense)
+        .toArray();
 
       // console.log("cursorIncome",cursorIncome);
       // console.log("cursorExpense",cursorExpense);
-      const allTrasIncome = cursorIncome?.map(tr => parseFloat(tr?.amount));
-      const allTrasExpense = cursorExpense?.map(tr => parseFloat(tr?.amount));
+      const allTrasIncome = cursorIncome?.map((tr) => parseFloat(tr?.amount));
+      const allTrasExpense = cursorExpense?.map((tr) => parseFloat(tr?.amount));
 
       const totalIncome = allTrasIncome?.reduce((obj1, obj2) => {
         return obj1 + obj2;
@@ -484,16 +483,11 @@ async function run() {
       //   return obj1?.amount + obj2?.amount;
       // }, 0);
 
-
       // console.log("all trans", allTras);
       // console.log("all trans", allTrasTotal);
 
-
-      res.send({totalIncome, totalExpense});
-
-
-    })
-
+      res.send({ totalIncome, totalExpense });
+    });
 
     // for accounts
     // create
@@ -598,7 +592,6 @@ async function run() {
     //     }
     // })
 
-    //// TODO: Ridoy Vai
     // DEMO /accountPi?email=backend@example.com
     // DEMO /accountPi?email=backend@example.com
     app.get("/accountPi", async (req, res) => {
@@ -1015,24 +1008,38 @@ async function run() {
       }
     });
 
-    // for blogs
-    // create
-
+    //******************   Blogs related API's ****************/
+    // POST
     app.post("/blogs", async (req, res) => {
       try {
         const newBlogs = req.body;
         // console.log(newBlogs)
         const result = await blogCollection.insertOne(newBlogs);
         res.send(result);
-      } catch (error) {}
+      } catch (error) {
+        res.send(error);
+      }
     });
 
-    // read
-
+    // GET
     app.get("/blogs", async (req, res) => {
       try {
-        const cursor = blogCollection.find();
-        const result = await cursor.toArray();
+        const result = await blogCollection
+          .find()
+          .sort({ timestamp: -1 })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+    // GET single Blog Data
+    app.get("/blogs/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const query = { _id: new ObjectId(id) };
+        const result = await blogCollection.findOne(query);
+
         res.send(result);
       } catch (error) {
         res.send(error.message);
