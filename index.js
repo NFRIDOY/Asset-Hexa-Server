@@ -1046,6 +1046,23 @@ async function run() {
       }
     });
 
+    //* patch a signle data *//
+    app.patch("/blogs/:id", async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const updatedDoc = {
+        $push: {
+          likes: data,
+        },
+      };
+
+      const result = await blogCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
