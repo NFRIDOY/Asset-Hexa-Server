@@ -911,6 +911,38 @@ async function run() {
       }
     });
 
+    /***Total balance***/
+
+    app.get("/totalBalance/:email", async (req, res) => {
+      const email = req.params.email;
+
+      try {
+        const totalBalance = await getTotalBalance(email);
+        res.json({ totalBalance });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+    async function getTotalBalance(email) {
+      const pipeline = [
+        {
+          $match: { email: email },
+        },
+        {
+          $group: {
+            _id: null,
+            totalBalance: { $sum: "$balance" },
+          },
+        },
+      ];
+
+      const result = await accountsCollection.aggregate(pipeline).toArray();
+
+      return result.length > 0 ? result[0].totalBalance : 0;
+    }
+
     // update accounts
     // delete account
 
