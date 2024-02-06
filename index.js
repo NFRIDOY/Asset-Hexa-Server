@@ -553,6 +553,7 @@ async function run() {
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
+    const newsLetterSubscriptionCollection = database.collection("newsLetterSubscription");
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -969,6 +970,48 @@ async function run() {
         res.send(error.message);
       }
     })
+
+
+     // for newsletter subscription
+    // create
+
+    app.post('/newsLetterSubscription', async (req, res) => {
+      try {
+        const newNewsLetterSubscription = req.body;
+        // console.log(newBlogs)
+        const result = await newsLetterSubscriptionCollection.insertOne(newNewsLetterSubscription);
+        res.send(result)
+      } catch (error) {
+
+      }
+    })
+
+
+    // read
+
+    app.get('/newsLetterSubscription', async (req, res) => {
+      try {
+        const cursor = newsLetterSubscriptionCollection.find()
+        const result = await cursor.toArray()
+        res.send(result)
+      } catch (error) {
+        res.send(error.message);
+      }
+    })
+
+
+     // delete
+
+     app.delete("/newsLetterSubscription/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await newsLetterSubscriptionCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
 
 
 
