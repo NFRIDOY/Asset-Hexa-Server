@@ -45,6 +45,7 @@ async function run() {
     const newsLetterSubscriptionCollection = database.collection(
       "newsLetterSubscription"
     );
+    const PricingCollection = database.collection("price");
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -954,6 +955,15 @@ async function run() {
 
     // for newsletter subscription
     // create
+        // Priching 
+        app.post("/price", async (req, res) => {
+          try {
+            const newPricing = req.body;
+            // console.log(newAccounts)
+            const result = await PricingCollection.insertOne(newPricing);
+            res.send(result);
+          } catch (error) {}
+        });
 
     app.post("/newsLetterSubscription", async (req, res) => {
       try {
@@ -991,6 +1001,19 @@ async function run() {
         res.send(error.message);
       }
     });
+
+       // Priching 
+        app.post("/price", async (req, res) => {
+          try {
+            const newPricing = req.body;
+            // console.log(newAccounts)
+            const result = await PricingCollection.insertOne(newPricing);
+            res.send(result);
+          } catch (error) {}
+        });
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
