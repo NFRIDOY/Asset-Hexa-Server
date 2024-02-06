@@ -572,27 +572,6 @@ async function run() {
       }
     });
 
-    // DEMO /catPi?type=INCOME&email=backend@example.com
-    // DEMO /catPi?type=EXPENSE&email=backend@example.com
-    // app.get('/accountPi', async (req, res) => {
-    //     try {
-    //         const transQuery = req.query.type;
-    //         const emailQuery = req.query.email;
-    //         const query = { type: transQuery, email: emailQuery };
-
-    //         const cursor = await transectionsCollection.find(query).toArray();
-
-    //         const accPiData = cursor?.map((acc) => acc?.amount);
-    //         const catPiLebel = cursor?.map((acc) => acc?.category);
-    //         // console.log(catPiData);
-    //         res.send({ catPiData: accPiData, catPiLebel });
-    //     } catch (error) {
-    //         res.send(error);
-
-    //     }
-    // })
-
-    // DEMO /accountPi?email=backend@example.com
     // DEMO /accountPi?email=backend@example.com
     app.get("/accountPi", async (req, res) => {
       try {
@@ -628,7 +607,9 @@ async function run() {
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
-    const newsLetterSubscriptionCollection = database.collection("newsLetterSubscription");
+    const newsLetterSubscriptionCollection = database.collection(
+      "newsLetterSubscription"
+    );
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -738,84 +719,6 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
-
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // client.connect();
-    // Send a ping to confirm a successful connection
-
-    // for transection
-    // create
-
-    // app.post('/transections', async (req, res) => {
-    //     try {
-    //         const newTransections = req.body;
-    //         // console.log(newTransections)
-    //         const result = await transectionsCollection.insertOne(newTransections);
-    //         res.send(result)
-    //     } catch (error) {
-    //         res.send(error.message);
-    //     }
-    // })
-    // DEMO: /transections?type=INCOME
-    // DEMO: /transections?type=EXPENSE
-    // app.post("/transections", async (req, res) => {
-    //   try {
-    //     // const id = req.params.id;
-    //     const account = req.body.account;
-    //     const newTransections = req.body;
-    //     const newTransectionsEmail = req.body?.email;
-    //     // const newTransectionsAmount = req.body.amount;
-    //     const typeTransec = req.body?.type;
-    //     const filter = { account: account };
-    //     const options = { upsert: true };
-
-    //     const queryAccount = { account: account, email: newTransectionsEmail };
-    //     // find the account
-    //     const accountfindOne = await accountsCollection.findOne(queryAccount);
-    //     const filterTo = { account: account };
-    //     // init amount of that account
-    //     let AmountOnAccount = accountfindOne?.amount;
-
-    //     if (typeTransec === "INCOME") {
-    //       AmountOnAccount = AmountOnAccount + newTransections?.amount;
-    //     } else if (typeTransec === "EXPENSE") {
-    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
-    //     } else if (typeTransec === "TRANSFAR") {
-    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
-    //     } else {
-    //       AmountOnAccount = AmountOnAccount;
-    //     }
-
-    //     const transectionsUpdateAccount = {
-    //       $set: {
-    //         // TODO: update property
-    //         amount: AmountOnAccount,
-    //       },
-    //     };
-
-    //     // insertOne into transections collection
-    //     const resultTransec = await transectionsCollection.insertOne(
-    //       newTransections
-    //     );
-
-    //     // update on account
-    //     const resultAccount = await accountsCollection.updateOne(
-    //       filter,
-    //       transectionsUpdateAccount,
-    //       options
-    //     );
-
-    //     // respose
-    //     const result = {
-    //       resultTransec,
-    //       resultAccount,
-    //     };
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
 
     // read
     // DEMO /transections?type=INCOME
@@ -1001,26 +904,6 @@ async function run() {
       }
     });
 
-    // DEMO /catPi?type=INCOME&email=backend@example.com
-    // DEMO /catPi?type=EXPENSE&email=backend@example.com
-    // app.get('/accountPi', async (req, res) => {
-    //     try {
-    //         const transQuery = req.query.type;
-    //         const emailQuery = req.query.email;
-    //         const query = { type: transQuery, email: emailQuery };
-
-    //         const cursor = await transectionsCollection.find(query).toArray();
-
-    //         const accPiData = cursor?.map((acc) => acc?.amount);
-    //         const catPiLebel = cursor?.map((acc) => acc?.category);
-    //         // console.log(catPiData);
-    //         res.send({ catPiData: accPiData, catPiLebel });
-    //     } catch (error) {
-    //         res.send(error);
-
-    //     }
-    // })
-
     //// TODO: Ridoy Vai
     // DEMO /accountPi?email=backend@example.com
     // DEMO /accountPi?email=backend@example.com
@@ -1073,74 +956,75 @@ async function run() {
         const query = { _id: new ObjectId(id) };
         const result = await blogCollection.findOne(query);
 
+        // for newsletter subscription
+        // create
 
-     // for newsletter subscription
-    // create
+        app.post("/newsLetterSubscription", async (req, res) => {
+          try {
+            const newNewsLetterSubscription = req.body;
+            // console.log(newBlogs)
+            const result = await newsLetterSubscriptionCollection.insertOne(
+              newNewsLetterSubscription
+            );
+            res.send(result);
+          } catch (error) {}
+        });
 
-    app.post('/newsLetterSubscription', async (req, res) => {
-      try {
-        const newNewsLetterSubscription = req.body;
-        // console.log(newBlogs)
-        const result = await newsLetterSubscriptionCollection.insertOne(newNewsLetterSubscription);
-        res.send(result)
-      } catch (error) {
+        // read
 
-      }
-    })
+        app.get("/newsLetterSubscription", async (req, res) => {
+          try {
+            const cursor = newsLetterSubscriptionCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+          } catch (error) {
+            res.send(error.message);
+          }
+        });
 
+        // delete
 
-    // read
+        app.delete("/newsLetterSubscription/:id", async (req, res) => {
+          try {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await newsLetterSubscriptionCollection.deleteOne(
+              query
+            );
 
-    app.get('/newsLetterSubscription', async (req, res) => {
-      try {
-        const cursor = newsLetterSubscriptionCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
-      } catch (error) {
-        res.send(error.message);
-      }
-    })
+            res.send(result);
+          } catch (error) {
+            res.send(error.message);
+          }
+        });
 
+        //* patch a signle data *//
+        app.patch("/blogs/:id", async (req, res) => {
+          const { id } = req.params;
+          const data = req.body;
+          const query = {
+            _id: new ObjectId(id),
+          };
+          const updatedDoc = {
+            $push: {
+              likes: data,
+            },
+          };
 
-     // delete
+          const result = await blogCollection.updateOne(query, updatedDoc);
+          res.send(result);
+        });
 
-     app.delete("/newsLetterSubscription/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await newsLetterSubscriptionCollection.deleteOne(query);
-
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
+        await client.db("admin").command({ ping: 1 });
+        console.log(
+          "Pinged your deployment. You successfully connected to MongoDB!"
+        );
+      } finally {
+        // Ensures that the client will close when you finish/error
+        // await client.close();
       }
     });
-
-
-    //* patch a signle data *//
-    app.patch("/blogs/:id", async (req, res) => {
-      const { id } = req.params;
-      const data = req.body;
-      const query = {
-        _id: new ObjectId(id),
-      };
-      const updatedDoc = {
-        $push: {
-          likes: data,
-        },
-      };
-
-      const result = await blogCollection.updateOne(query, updatedDoc);
-      res.send(result);
-    });
-
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
 }
 run().catch(console.dir);
