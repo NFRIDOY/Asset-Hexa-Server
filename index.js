@@ -1004,6 +1004,32 @@ async function run() {
       } catch (error) { console.log("error on POST /bussiness"); }
     });
 
+    // GET ~~~~~~~~~~~Business 
+    app.get("/bussiness", async (req, res) => {
+      try {
+        const cursor = businessesCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
+    // GET by is [dynamic ~~~~~~~~~~~Business]
+    app.get("/bussiness/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        // const queryEmail = req?.query?.email;
+        const query = { _id: new ObjectId(id) }
+        const cursor = businessesCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        console.log("Error On get Business id");
+        res.send(error.message);
+      }
+    });
+
 
 
     await client.db("admin").command({ ping: 1 });
