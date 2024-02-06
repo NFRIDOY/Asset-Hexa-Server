@@ -38,11 +38,13 @@ async function run() {
     const database = client.db("assethexadb");
 
     const usersCollection = database.collection("users");
-
     const transectionsCollection = database.collection("transections");
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
+    const newsLetterSubscriptionCollection = database.collection(
+      "newsLetterSubscription"
+    );
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -589,28 +591,6 @@ async function run() {
       }
     });
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
-
-  try {
-    const database = client.db("assethexadb");
-
-    const usersCollection = database.collection("users");
-
-    const transectionsCollection = database.collection("transections");
-    const accountsCollection = database.collection("accounts");
-    const categoryCollection = database.collection("categoris");
-    const blogCollection = database.collection("blogs");
-    const newsLetterSubscriptionCollection = database.collection(
-      "newsLetterSubscription"
-    );
-
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
@@ -708,11 +688,6 @@ async function run() {
         res.status(500).send("Internal Server Error");
       }
     });
-
-    // async function sendResponseAfterCalculations(res, chartData) {
-    //   // Wait for the response to be sent
-    //   await res.send(chartData);
-    // }
 
     // Get all users
     app.get("/users", async (req, res) => {
@@ -924,7 +899,7 @@ async function run() {
       }
     });
 
-    //******************   Blogs related API's ****************/
+    //********************************** Blog related API's *******************************/
     // POST
     app.post("/blogs", async (req, res) => {
       try {
@@ -949,82 +924,81 @@ async function run() {
         res.send(error.message);
       }
     });
-    // GET single Blog Data
+
+    //* GET single Blog Data *//
     app.get("/blogs/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogCollection.findOne(query);
+      res.send(result);
+    });
+
+    //* patch a signle data *//
+    app.patch("/blogs/:id", async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const updatedDoc = {
+        $push: {
+          likes: data,
+        },
+      };
+
+      const result = await blogCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+    //************************************ END of Blog realated API  ***************************//
+
+    // for newsletter subscription
+    // create
+
+    app.post("/newsLetterSubscription", async (req, res) => {
       try {
-        const { id } = req.params;
-        const query = { _id: new ObjectId(id) };
-        const result = await blogCollection.findOne(query);
-
-        // for newsletter subscription
-        // create
-
-        app.post("/newsLetterSubscription", async (req, res) => {
-          try {
-            const newNewsLetterSubscription = req.body;
-            // console.log(newBlogs)
-            const result = await newsLetterSubscriptionCollection.insertOne(
-              newNewsLetterSubscription
-            );
-            res.send(result);
-          } catch (error) {}
-        });
-
-        // read
-
-        app.get("/newsLetterSubscription", async (req, res) => {
-          try {
-            const cursor = newsLetterSubscriptionCollection.find();
-            const result = await cursor.toArray();
-            res.send(result);
-          } catch (error) {
-            res.send(error.message);
-          }
-        });
-
-        // delete
-
-        app.delete("/newsLetterSubscription/:id", async (req, res) => {
-          try {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await newsLetterSubscriptionCollection.deleteOne(
-              query
-            );
-
-            res.send(result);
-          } catch (error) {
-            res.send(error.message);
-          }
-        });
-
-        //* patch a signle data *//
-        app.patch("/blogs/:id", async (req, res) => {
-          const { id } = req.params;
-          const data = req.body;
-          const query = {
-            _id: new ObjectId(id),
-          };
-          const updatedDoc = {
-            $push: {
-              likes: data,
-            },
-          };
-
-          const result = await blogCollection.updateOne(query, updatedDoc);
-          res.send(result);
-        });
-
-        await client.db("admin").command({ ping: 1 });
-        console.log(
-          "Pinged your deployment. You successfully connected to MongoDB!"
+        const newNewsLetterSubscription = req.body;
+        // console.log(newBlogs)
+        const result = await newsLetterSubscriptionCollection.insertOne(
+          newNewsLetterSubscription
         );
-      } finally {
-        // Ensures that the client will close when you finish/error
-        // await client.close();
+        res.send(result);
+      } catch (error) {}
+    });
+
+    // read
+
+    app.get("/newsLetterSubscription", async (req, res) => {
+      try {
+        const cursor = newsLetterSubscriptionCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
       }
     });
+
+    // delete
+
+    app.delete("/newsLetterSubscription/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await newsLetterSubscriptionCollection.deleteOne(query);
+
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
+    // Ensures that the client will close when you finish/error
+    // await client.close();
   }
 }
 run().catch(console.dir);
