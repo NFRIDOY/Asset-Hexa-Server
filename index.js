@@ -915,10 +915,7 @@ async function run() {
     // GET
     app.get("/blogs", async (req, res) => {
       try {
-        const result = await blogCollection
-          .find()
-          .sort({ timestamp: -1 })
-          .toArray();
+        const result = await blogCollection.find().sort({ time: -1 }).toArray();
         res.send(result);
       } catch (error) {
         res.send(error.message);
@@ -933,18 +930,35 @@ async function run() {
       res.send(result);
     });
 
-    //* patch a signle data *//
+    //* patch Like or Dislike  data *//
     app.patch("/blogs/:id", async (req, res) => {
       const { id } = req.params;
+      const { likeORdislike } = req.query;
+      console.log(likeORdislike);
       const data = req.body;
       const query = {
         _id: new ObjectId(id),
       };
-      const updatedDoc = {
-        $push: {
-          likes: data,
-        },
-      };
+      let updatedDoc;
+      if (likeORdislike === "like") {
+        updatedDoc = {
+          $push: {
+            likes: data,
+          },
+        };
+      } else if (likeORdislike === "dislike") {
+        updatedDoc = {
+          $push: {
+            dislikes: data,
+          },
+        };
+      } else {
+        updatedDoc = {
+          $push: {
+            comments: data,
+          },
+        };
+      }
 
       const result = await blogCollection.updateOne(query, updatedDoc);
       res.send(result);
