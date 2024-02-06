@@ -42,9 +42,9 @@ async function run() {
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
-    const newsLetterSubscriptionCollection = database.collection(
-      "newsLetterSubscription"
-    );
+    const newsLetterSubscriptionCollection = database.collection("newsLetterSubscription");
+    const businessesCollection = database.collection("businesses");
+    const investmentsCollection = database.collection("investments");
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -500,7 +500,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -773,7 +773,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -963,7 +963,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -991,6 +991,20 @@ async function run() {
         res.send(error.message);
       }
     });
+
+    // Post ~~~~~~~~~~~Business Form submission 
+    app.post("/bussiness", async (req, res) => {
+      try {
+        const newBusiness = req.body;
+        // console.log(newBlogs)
+        const result = await businessesCollection.insertOne(
+          newBusiness
+        );
+        res.send(result);
+      } catch (error) { console.log("error on POST /bussiness"); }
+    });
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
