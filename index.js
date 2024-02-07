@@ -991,11 +991,10 @@ async function run() {
         res.send(error.message);
       }
     });
-<<<<<<<<< Temporary merge branch 1
-=========
+// <<<<<<<<< Temporary merge branch 1=========
 
 
->>>>>>>>> Temporary merge branch 2
+// >>>>>>>>> Temporary merge branch 2
 
     //* patch a signle data *//
     app.patch("/blogs/:id", async (req, res) => {
