@@ -1021,8 +1021,7 @@ async function run() {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
         const query = { _id: new ObjectId(id) }
-        const cursor = businessesCollection.find(query);
-        const result = await cursor.toArray();
+        const result = await businessesCollection.find(query).toArray();
         res.send(result);
       } catch (error) {
         console.log("Error On get Business id");
