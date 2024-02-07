@@ -42,6 +42,7 @@ async function run() {
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
+    const bookmarkCollection = database.collection("bookmark");
     const newsLetterSubscriptionCollection = database.collection(
       "newsLetterSubscription"
     );
@@ -966,6 +967,16 @@ async function run() {
 
     //************************************ END of Blog realated API  ***************************//
 
+    //************************************ Bookmark realated API  ***************************//
+
+    //* Add to Bookmark:- post blog data to a collection,users to read later   *//
+    app.post("/bookmark", async (req, res) => {
+      const bookmarkedBlogData = req.body;
+
+      const result = await bookmarkCollection.insertOne(bookmarkedBlogData);
+      res.send(result);
+    });
+    //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
 
@@ -1005,10 +1016,9 @@ async function run() {
         res.send(error.message);
       }
     });
-// <<<<<<<<< Temporary merge branch 1=========
+    // <<<<<<<<< Temporary merge branch 1=========
 
-
-// >>>>>>>>> Temporary merge branch 2
+    // >>>>>>>>> Temporary merge branch 2
 
     //* patch a signle data *//
     app.patch("/blogs/:id", async (req, res) => {
