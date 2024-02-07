@@ -46,6 +46,8 @@ async function run() {
     const newsLetterSubscriptionCollection = database.collection(
       "newsLetterSubscription"
     );
+    const businessesCollection = database.collection("businesses");
+    const investmentsCollection = database.collection("investments");
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -1035,6 +1037,43 @@ async function run() {
 
       const result = await blogCollection.updateOne(query, updatedDoc);
       res.send(result);
+    });
+
+    // Post ~~~~~~~~~~~Business Form submission
+    app.post("/bussiness", async (req, res) => {
+      try {
+        const newBusiness = req.body;
+        // console.log(newBlogs)
+        const result = await businessesCollection.insertOne(newBusiness);
+        res.send(result);
+      } catch (error) {
+        console.log("error on POST /bussiness");
+      }
+    });
+
+    // GET ~~~~~~~~~~~Business
+    app.get("/bussiness", async (req, res) => {
+      try {
+        const cursor = businessesCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
+    // GET by is [dynamic ~~~~~~~~~~~Business]
+    app.get("/bussiness/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        // const queryEmail = req?.query?.email;
+        const query = { _id: new ObjectId(id) };
+        const result = await businessesCollection.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        console.log("Error On get Business id");
+        res.send(error.message);
+      }
     });
 
     await client.db("admin").command({ ping: 1 });
