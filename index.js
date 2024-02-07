@@ -42,7 +42,10 @@ async function run() {
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
-    const newsLetterSubscriptionCollection = database.collection("newsLetterSubscription");
+    const bookmarkCollection = database.collection("bookmark");
+    const newsLetterSubscriptionCollection = database.collection(
+      "newsLetterSubscription"
+    );
     const businessesCollection = database.collection("businesses");
     const investmentsCollection = database.collection("investments");
 
@@ -500,7 +503,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -773,7 +776,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -966,6 +969,16 @@ async function run() {
 
     //************************************ END of Blog realated API  ***************************//
 
+    //************************************ Bookmark realated API  ***************************//
+
+    //* Add to Bookmark:- post blog data to a collection,users to read later   *//
+    app.post("/bookmark", async (req, res) => {
+      const bookmarkedBlogData = req.body;
+
+      const result = await bookmarkCollection.insertOne(bookmarkedBlogData);
+      res.send(result);
+    });
+    //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
 
@@ -977,7 +990,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -1005,10 +1018,9 @@ async function run() {
         res.send(error.message);
       }
     });
-// <<<<<<<<< Temporary merge branch 1=========
+    // <<<<<<<<< Temporary merge branch 1=========
 
-
-// >>>>>>>>> Temporary merge branch 2
+    // >>>>>>>>> Temporary merge branch 2
 
     //* patch a signle data *//
     app.patch("/blogs/:id", async (req, res) => {
@@ -1027,19 +1039,19 @@ async function run() {
       res.send(result);
     });
 
-    // Post ~~~~~~~~~~~Business Form submission 
+    // Post ~~~~~~~~~~~Business Form submission
     app.post("/bussiness", async (req, res) => {
       try {
         const newBusiness = req.body;
         // console.log(newBlogs)
-        const result = await businessesCollection.insertOne(
-          newBusiness
-        );
+        const result = await businessesCollection.insertOne(newBusiness);
         res.send(result);
-      } catch (error) { console.log("error on POST /bussiness"); }
+      } catch (error) {
+        console.log("error on POST /bussiness");
+      }
     });
 
-    // GET ~~~~~~~~~~~Business 
+    // GET ~~~~~~~~~~~Business
     app.get("/bussiness", async (req, res) => {
       try {
         const cursor = businessesCollection.find();
@@ -1055,7 +1067,7 @@ async function run() {
       try {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
-        const query = { _id: new ObjectId(id) }
+        const query = { _id: new ObjectId(id) };
         const result = await businessesCollection.find(query).toArray();
         res.send(result);
       } catch (error) {
@@ -1063,8 +1075,6 @@ async function run() {
         res.send(error.message);
       }
     });
-
-
 
     await client.db("admin").command({ ping: 1 });
     console.log(
