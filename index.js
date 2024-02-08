@@ -786,7 +786,7 @@ async function run() {
       res.send(result);
     });
 
-    //* patch Like or Dislike  data *//
+    //* patch Like or Dislike or Comment  data *//
     app.patch("/blogs/:id", async (req, res) => {
       const { id } = req.params;
       const { likeORdislike } = req.query;
