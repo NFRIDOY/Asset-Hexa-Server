@@ -1005,10 +1005,10 @@ async function run() {
         res.send(error.message);
       }
     });
-// <<<<<<<<< Temporary merge branch 1=========
+    // <<<<<<<<< Temporary merge branch 1=========
 
 
-// >>>>>>>>> Temporary merge branch 2
+    // >>>>>>>>> Temporary merge branch 2
 
     //* patch a signle data *//
     app.patch("/blogs/:id", async (req, res) => {
@@ -1040,10 +1040,30 @@ async function run() {
     });
 
     // GET ~~~~~~~~~~~Business 
+    // Demo: /bussiness?email=income@gmail.com
+    // app.get("/bussiness", async (req, res) => {
+    //   try {
+    //     const cursor = businessesCollection.find();
+    //     const result = await cursor.toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+
+    // Demo: /bussiness?email=income@gmail.com
     app.get("/bussiness", async (req, res) => {
       try {
-        const cursor = businessesCollection.find();
-        const result = await cursor.toArray();
+        const queryEmail = req.query.email;
+        const filter = { email: queryEmail };
+        let result;
+        if (queryEmail) {
+          result = await businessesCollection.find(filter).toArray();
+        }
+        else {
+          result = await businessesCollection.find().toArray();
+
+        }
         res.send(result);
       } catch (error) {
         res.send(error.message);
