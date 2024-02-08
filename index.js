@@ -56,7 +56,7 @@ async function run() {
       const query = { email: email };
       const options = { upsert: true };
       const isExist = await usersCollection.findOne(query);
-      console.log("User found?----->", isExist);
+      // console.log("User found?----->", isExist);
       if (isExist) return res.send(isExist);
       const result = await usersCollection.updateOne(
         query,
@@ -74,133 +74,6 @@ async function run() {
       res.send(result);
     });
 
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // client.connect();
-    // Send a ping to confirm a successful connection
-
-    // for transection
-    // create
-
-    // app.post('/transections', async (req, res) => {
-    //     try {
-    //         const newTransections = req.body;
-    //         // console.log(newTransections)
-    //         const result = await transectionsCollection.insertOne(newTransections);
-    //         res.send(result)
-    //     } catch (error) {
-    //         res.send(error.message);
-    //     }
-    // })
-    // DEMO: /transections?type=INCOME
-    // DEMO: /transections?type=EXPENSE&email
-    // app.post("/transections", async (req, res) => {
-    //   try {
-    //     // const id = req.params.id;
-    //     const account = req.body?.account;
-    //     const newTransections = req.body;
-    //     const newTransectionsEmail = req.body?.email;
-    //     // const newTransectionsAmount = req.body.amount;
-    //     const typeTransec = req.body?.type;
-
-    //     if (typeTransec === "INCOME") {
-    //       const filter = { account: account };
-    //       const options = { upsert: true };
-
-    //       const queryAccount = {
-    //         account: account,
-    //         email: newTransectionsEmail,
-    //       };
-    //       // find the account
-    //       const accountfindOne = await accountsCollection.findOne(queryAccount);
-
-    //       // init amount of that account
-    //       let AmountOnAccount = accountfindOne?.amount;
-
-    //       AmountOnAccount = AmountOnAccount + newTransections?.amount;
-
-    //       const transectionsUpdateAccount = {
-    //         $set: {
-    //           // TODO: update property
-    //           amount: AmountOnAccount,
-    //         },
-    //       };
-
-    //       // insertOne into transections collection
-    //       const resultTransec = await transectionsCollection.insertOne(
-    //         newTransections
-    //       );
-
-    //       // update on account
-    //       const resultAccount = await accountsCollection.updateOne(
-    //         filter,
-    //         transectionsUpdateAccount,
-    //         options
-    //       );
-
-    //       // respose
-    //       const result = {
-    //         resultTransec,
-    //         resultAccount,
-    //       };
-    //       return res.send(result);
-    //     } else if (typeTransec === "EXPENSE") {
-    //       const filter = { account: account };
-    //       const options = { upsert: true };
-
-    //       const queryAccount = {
-    //         account: account,
-    //         email: newTransectionsEmail,
-    //       };
-
-    //       // find the account
-    //       const accountfindOne = await accountsCollection.findOne(queryAccount);
-
-    //       let AmountOnAccount = accountfindOne?.amount;
-    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
-
-    //       const transectionsUpdateAccount = {
-    //         $set: {
-    //           // TODO: update property
-    //           amount: AmountOnAccount,
-    //         },
-    //       };
-
-    //       // insertOne into transections collection
-    //       const resultTransec = await transectionsCollection.insertOne(
-    //         newTransections
-    //       );
-
-    //       // update on account
-    //       const resultAccount = await accountsCollection.updateOne(
-    //         filter,
-    //         transectionsUpdateAccount,
-    //         options
-    //       );
-
-    //       // respose
-    //       const result = {
-    //         resultTransec,
-    //         resultAccount,
-    //       };
-    //       return res.send(result);
-    //     } else if (typeTransec === "TRANSFAR") {
-    //       const filterTo = { account: account };
-    //       const accountfindOneTo = await accountsCollection.findOne(
-    //         queryAccount
-    //       );
-    //       let AmountOnAccountTo = accountfindOneTo?.amount;
-    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
-    //       AmountOnAccountTo = AmountOnAccountTo + newTransections?.amount;
-    //     } else {
-    //       // AmountOnAccount = AmountOnAccount;
-    //       res.status(400).json({ error: "Error" });
-    //     }
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
-    ////////////////////////////////////////////////////////////////NF RIDOY //
     app.post("/transections", async (req, res) => {
       try {
         // const id = req.params.id;
@@ -438,31 +311,11 @@ async function run() {
       }
     });
 
-    // const getTotal = (array) => {
-
-    //   let total = 0;
-    //   for (const iterator of array) {
-
-    //   }
-
-    //   return getTotal;
-    // }
-
-    ///NF RIDOY //
-    //// get total income and total expnsecs
-    //// DEMO// /transections/totalInExp?email=front@example.com
-
     app.get("/totalInExp", async (req, res) => {
       const userQueryEmail = req.query.email;
 
       const queryIncome = { type: "INCOME", email: userQueryEmail };
       const queryExpense = { type: "EXPENSE", email: userQueryEmail };
-      // const options = {
-      //   // Sort returned documents in ascending order by title (A->Z)
-      //   sort: { title: 1 },
-      //   // Include only the `title` and `imdb` fields in each returned document
-      //   projection: { _id: 0, title: 1, imdb: 1 },
-      // };
 
       // Execute query
       const cursorIncome = await transectionsCollection
@@ -978,6 +831,15 @@ async function run() {
       const result = await bookmarkCollection.insertOne(bookmarkedBlogData);
       res.send(result);
     });
+
+    //* Get Bookmark data:-  get bookmark data base on users  *//
+    app.get("/bookmark/:email", async (req, res) => {
+      const email = req.params?.email;
+      const query = { user: email };
+      const result = await bookmarkCollection.find(query).toArray();
+      res.send(result);
+    });
+
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
@@ -1071,7 +933,7 @@ async function run() {
         const result = await businessesCollection.find(query).toArray();
         res.send(result);
       } catch (error) {
-        console.log("Error On get Business id");
+        // console.log("Error On get Business id");
         res.send(error.message);
       }
     });
