@@ -5,6 +5,7 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 const { getIncomeExpenseChartData } = require("./utils/chatData");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 // req
 app.use(express.json());
@@ -42,9 +43,13 @@ async function run() {
     const accountsCollection = database.collection("accounts");
     const categoryCollection = database.collection("categoris");
     const blogCollection = database.collection("blogs");
-    const newsLetterSubscriptionCollection = database.collection("newsLetterSubscription");
+    const bookmarkCollection = database.collection("bookmark");
+    const newsLetterSubscriptionCollection = database.collection(
+      "newsLetterSubscription"
+    );
     const businessesCollection = database.collection("businesses");
     const investmentsCollection = database.collection("investments");
+    const paymentCollection = database.collection("payments")
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -53,7 +58,7 @@ async function run() {
       const query = { email: email };
       const options = { upsert: true };
       const isExist = await usersCollection.findOne(query);
-      console.log("User found?----->", isExist);
+      // console.log("User found?----->", isExist);
       if (isExist) return res.send(isExist);
       const result = await usersCollection.updateOne(
         query,
@@ -71,133 +76,6 @@ async function run() {
       res.send(result);
     });
 
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // client.connect();
-    // Send a ping to confirm a successful connection
-
-    // for transection
-    // create
-
-    // app.post('/transections', async (req, res) => {
-    //     try {
-    //         const newTransections = req.body;
-    //         // console.log(newTransections)
-    //         const result = await transectionsCollection.insertOne(newTransections);
-    //         res.send(result)
-    //     } catch (error) {
-    //         res.send(error.message);
-    //     }
-    // })
-    // DEMO: /transections?type=INCOME
-    // DEMO: /transections?type=EXPENSE&email
-    // app.post("/transections", async (req, res) => {
-    //   try {
-    //     // const id = req.params.id;
-    //     const account = req.body?.account;
-    //     const newTransections = req.body;
-    //     const newTransectionsEmail = req.body?.email;
-    //     // const newTransectionsAmount = req.body.amount;
-    //     const typeTransec = req.body?.type;
-
-    //     if (typeTransec === "INCOME") {
-    //       const filter = { account: account };
-    //       const options = { upsert: true };
-
-    //       const queryAccount = {
-    //         account: account,
-    //         email: newTransectionsEmail,
-    //       };
-    //       // find the account
-    //       const accountfindOne = await accountsCollection.findOne(queryAccount);
-
-    //       // init amount of that account
-    //       let AmountOnAccount = accountfindOne?.amount;
-
-    //       AmountOnAccount = AmountOnAccount + newTransections?.amount;
-
-    //       const transectionsUpdateAccount = {
-    //         $set: {
-    //           // TODO: update property
-    //           amount: AmountOnAccount,
-    //         },
-    //       };
-
-    //       // insertOne into transections collection
-    //       const resultTransec = await transectionsCollection.insertOne(
-    //         newTransections
-    //       );
-
-    //       // update on account
-    //       const resultAccount = await accountsCollection.updateOne(
-    //         filter,
-    //         transectionsUpdateAccount,
-    //         options
-    //       );
-
-    //       // respose
-    //       const result = {
-    //         resultTransec,
-    //         resultAccount,
-    //       };
-    //       return res.send(result);
-    //     } else if (typeTransec === "EXPENSE") {
-    //       const filter = { account: account };
-    //       const options = { upsert: true };
-
-    //       const queryAccount = {
-    //         account: account,
-    //         email: newTransectionsEmail,
-    //       };
-
-    //       // find the account
-    //       const accountfindOne = await accountsCollection.findOne(queryAccount);
-
-    //       let AmountOnAccount = accountfindOne?.amount;
-    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
-
-    //       const transectionsUpdateAccount = {
-    //         $set: {
-    //           // TODO: update property
-    //           amount: AmountOnAccount,
-    //         },
-    //       };
-
-    //       // insertOne into transections collection
-    //       const resultTransec = await transectionsCollection.insertOne(
-    //         newTransections
-    //       );
-
-    //       // update on account
-    //       const resultAccount = await accountsCollection.updateOne(
-    //         filter,
-    //         transectionsUpdateAccount,
-    //         options
-    //       );
-
-    //       // respose
-    //       const result = {
-    //         resultTransec,
-    //         resultAccount,
-    //       };
-    //       return res.send(result);
-    //     } else if (typeTransec === "TRANSFAR") {
-    //       const filterTo = { account: account };
-    //       const accountfindOneTo = await accountsCollection.findOne(
-    //         queryAccount
-    //       );
-    //       let AmountOnAccountTo = accountfindOneTo?.amount;
-    //       AmountOnAccount = AmountOnAccount - newTransections?.amount;
-    //       AmountOnAccountTo = AmountOnAccountTo + newTransections?.amount;
-    //     } else {
-    //       // AmountOnAccount = AmountOnAccount;
-    //       res.status(400).json({ error: "Error" });
-    //     }
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
-    ////////////////////////////////////////////////////////////////NF RIDOY //
     app.post("/transections", async (req, res) => {
       try {
         // const id = req.params.id;
@@ -364,102 +242,82 @@ async function run() {
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?&email=backend@example.com) => all translations
-    app.get("/transections", async (req, res) => {
-      try {
-        const transQuery = req.query.type;
-        const emailQuery = req.query.email;
-        let query = {};
-        // console.log(transQuery);
-        // console.log(emailQuery);
-        if (transQuery) {
-          query = { type: transQuery, email: emailQuery };
-        } else {
-          query = { email: emailQuery };
-        }
-        const cursor = transectionsCollection.find(query);
-        const result = await cursor.toArray();
-        res.send(result);
-      } catch (error) {
-        res.status(500).json({ message: error.message });
-      }
-    });
+    // app.get("/transections", async (req, res) => {
+    //   try {
+    //     const transQuery = req.query.type;
+    //     const emailQuery = req.query.email;
+    //     let query = {};
+    //     // console.log(transQuery);
+    //     // console.log(emailQuery);
+    //     if (transQuery) {
+    //       query = { type: transQuery, email: emailQuery };
+    //     } else {
+    //       query = { email: emailQuery };
+    //     }
+    //     const cursor = transectionsCollection.find(query);
+    //     const result = await cursor.toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.status(500).json({ message: error.message });
+    //   }
+    // });
 
     // delete
 
-    app.delete("/transections/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await transectionsCollection.deleteOne(query);
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    // app.delete("/transections/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const query = { _id: new ObjectId(id) };
+    //     const result = await transectionsCollection.deleteOne(query);
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     // find one
 
-    app.get("/transections/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await transectionsCollection.findOne(query);
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
-
-    // update
-
-    app.put("/transections/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const options = { upsert: true };
-        const updateTransections = req.body;
-        const transections = {
-          $set: {
-            // TODO: update property
-          },
-        };
-
-        const result = await transectionsCollection.updateOne(
-          filter,
-          transections,
-          options
-        );
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
-
-    // const getTotal = (array) => {
-
-    //   let total = 0;
-    //   for (const iterator of array) {
-
+    // app.get("/transections/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const query = { _id: new ObjectId(id) };
+    //     const result = await transectionsCollection.findOne(query);
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
     //   }
+    // });
 
-    //   return getTotal;
-    // }
+    // // update
 
-    ///NF RIDOY //
-    //// get total income and total expnsecs
-    //// DEMO// /transections/totalInExp?email=front@example.com
+    // app.put("/transections/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const filter = { _id: new ObjectId(id) };
+    //     const options = { upsert: true };
+    //     const updateTransections = req.body;
+    //     const transections = {
+    //       $set: {
+    //         // TODO: update property
+    //       },
+    //     };
+
+    //     const result = await transectionsCollection.updateOne(
+    //       filter,
+    //       transections,
+    //       options
+    //     );
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     app.get("/totalInExp", async (req, res) => {
       const userQueryEmail = req.query.email;
 
       const queryIncome = { type: "INCOME", email: userQueryEmail };
       const queryExpense = { type: "EXPENSE", email: userQueryEmail };
-      // const options = {
-      //   // Sort returned documents in ascending order by title (A->Z)
-      //   sort: { title: 1 },
-      //   // Include only the `title` and `imdb` fields in each returned document
-      //   projection: { _id: 0, title: 1, imdb: 1 },
-      // };
 
       // Execute query
       const cursorIncome = await transectionsCollection
@@ -494,102 +352,102 @@ async function run() {
     // for accounts
     // create
 
-    app.post("/accounts", async (req, res) => {
-      try {
-        const newAccounts = req.body;
-        // console.log(newAccounts)
-        const result = await accountsCollection.insertOne(newAccounts);
-        res.send(result);
-      } catch (error) { }
-    });
+    // app.post("/accounts", async (req, res) => {
+    //   try {
+    //     const newAccounts = req.body;
+    //     // console.log(newAccounts)
+    //     const result = await accountsCollection.insertOne(newAccounts);
+    //     res.send(result);
+    //   } catch (error) {}
+    // });
 
     // read
 
-    app.get("/accounts", async (req, res) => {
-      try {
-        const emailQuery = req.query.email;
-        const query = { email: emailQuery };
-        const cursor = accountsCollection.find(query);
-        const result = await cursor.toArray();
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    // app.get("/accounts", async (req, res) => {
+    //   try {
+    //     const emailQuery = req.query.email;
+    //     const query = { email: emailQuery };
+    //     const cursor = accountsCollection.find(query);
+    //     const result = await cursor.toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     // update accounts
     // delete account
 
     // add categories
-    app.post("/categories", async (req, res) => {
-      try {
-        const catReq = req.body;
-        const result = await categoryCollection.insertOne(catReq);
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    // app.post("/categories", async (req, res) => {
+    //   try {
+    //     const catReq = req.body;
+    //     const result = await categoryCollection.insertOne(catReq);
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     // DEMO /categories?type=INCOME
     // DEMO /categories?type=EXPENSE&email=backend@example.com
-    app.get("/categories", async (req, res) => {
-      try {
-        // const catReq = req.body;
-        const catQuery = req.query.type;
-        const query = { type: catQuery };
-        const result = await categoryCollection.find(query).toArray();
-        res.send(result);
-        // if (catQuery === "INCOME") {
-        //     const query = { type: catQuery };
-        //     const result = await categoryCollection.find().toArray();
-        //     res.send(result)
-        // }
-        // else if (catQuery === "EXPENSE") {
-        //     const query = { type: catQuery };
-        //     const result = await categoryCollection.find().toArray();
-        //     res.send(result)
-        // }
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    // app.get("/categories", async (req, res) => {
+    //   try {
+    //     // const catReq = req.body;
+    //     const catQuery = req.query.type;
+    //     const query = { type: catQuery };
+    //     const result = await categoryCollection.find(query).toArray();
+    //     res.send(result);
+    //     // if (catQuery === "INCOME") {
+    //     //     const query = { type: catQuery };
+    //     //     const result = await categoryCollection.find().toArray();
+    //     //     res.send(result)
+    //     // }
+    //     // else if (catQuery === "EXPENSE") {
+    //     //     const query = { type: catQuery };
+    //     //     const result = await categoryCollection.find().toArray();
+    //     //     res.send(result)
+    //     // }
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     // DEMO /catPi?type=INCOME&email=backend@example.com
     // DEMO /catPi?type=EXPENSE&email=backend@example.com
-    app.get("/catPi", async (req, res) => {
-      try {
-        const transQuery = req.query.type;
-        const emailQuery = req.query.email;
-        const query = { type: transQuery, email: emailQuery };
+    // app.get("/catPi", async (req, res) => {
+    //   try {
+    //     const transQuery = req.query.type;
+    //     const emailQuery = req.query.email;
+    //     const query = { type: transQuery, email: emailQuery };
 
-        const cursor = await transectionsCollection.find(query).toArray();
+    //     const cursor = await transectionsCollection.find(query).toArray();
 
-        const catPiData = cursor?.map((cat) => cat?.amount);
-        const catPiLebel = cursor?.map((cat) => cat?.category);
-        // console.log(catPiData);
-        res.send({ catPiData, catPiLebel });
-      } catch (error) {
-        res.send(error);
-      }
-    });
+    //     const catPiData = cursor?.map((cat) => cat?.amount);
+    //     const catPiLebel = cursor?.map((cat) => cat?.category);
+    //     // console.log(catPiData);
+    //     res.send({ catPiData, catPiLebel });
+    //   } catch (error) {
+    //     res.send(error);
+    //   }
+    // });
 
     // DEMO /accountPi?email=backend@example.com
-    app.get("/accountPi", async (req, res) => {
-      try {
-        const emailQuery = req.query.email;
-        const query = { email: emailQuery };
+    // app.get("/accountPi", async (req, res) => {
+    //   try {
+    //     const emailQuery = req.query.email;
+    //     const query = { email: emailQuery };
 
-        const cursor = await accountsCollection.find(query).toArray();
+    //     const cursor = await accountsCollection.find(query).toArray();
 
-        const accPiData = cursor?.map((accAmount) => accAmount?.amount);
-        const accPiLebel = cursor?.map((accName) => accName?.account);
-        // console.log(catPiData);
-        res.send({ accPiData: accPiData, accPiLebel: accPiLebel });
-      } catch (error) {
-        res.send(error);
-      }
-    });
+    //     const accPiData = cursor?.map((accAmount) => accAmount?.amount);
+    //     const accPiLebel = cursor?.map((accName) => accName?.account);
+    //     // console.log(catPiData);
+    //     res.send({ accPiData: accPiData, accPiLebel: accPiLebel });
+    //   } catch (error) {
+    //     res.send(error);
+    //   }
+    // });
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -773,7 +631,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -966,6 +824,25 @@ async function run() {
 
     //************************************ END of Blog realated API  ***************************//
 
+    //************************************ Bookmark realated API  ***************************//
+
+    //* Add to Bookmark:- post blog data to a collection,users to read later   *//
+    app.post("/bookmark", async (req, res) => {
+      const bookmarkedBlogData = req.body;
+
+      const result = await bookmarkCollection.insertOne(bookmarkedBlogData);
+      res.send(result);
+    });
+
+    //* Get Bookmark data:-  get bookmark data base on users  *//
+    app.get("/bookmark/:email", async (req, res) => {
+      const email = req.params?.email;
+      const query = { user: email };
+      const result = await bookmarkCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
 
@@ -977,7 +854,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -1011,32 +888,32 @@ async function run() {
     // >>>>>>>>> Temporary merge branch 2
 
     //* patch a signle data *//
-    app.patch("/blogs/:id", async (req, res) => {
-      const { id } = req.params;
-      const data = req.body;
-      const query = {
-        _id: new ObjectId(id),
-      };
-      const updatedDoc = {
-        $push: {
-          likes: data,
-        },
-      };
+    // app.patch("/blogs/:id", async (req, res) => {
+    //   const { id } = req.params;
+    //   const data = req.body;
+    //   const query = {
+    //     _id: new ObjectId(id),
+    //   };
+    //   const updatedDoc = {
+    //     $push: {
+    //       likes: data,
+    //     },
+    //   };
 
-      const result = await blogCollection.updateOne(query, updatedDoc);
-      res.send(result);
-    });
+    //   const result = await blogCollection.updateOne(query, updatedDoc);
+    //   res.send(result);
+    // });
 
-    // Post ~~~~~~~~~~~Business Form submission 
+    // Post ~~~~~~~~~~~Business Form submission
     app.post("/bussiness", async (req, res) => {
       try {
         const newBusiness = req.body;
         // console.log(newBlogs)
-        const result = await businessesCollection.insertOne(
-          newBusiness
-        );
+        const result = await businessesCollection.insertOne(newBusiness);
         res.send(result);
-      } catch (error) { console.log("error on POST /bussiness"); }
+      } catch (error) {
+        console.log("error on POST /bussiness");
+      }
     });
 
     // GET ~~~~~~~~~~~Business 
@@ -1052,6 +929,7 @@ async function run() {
     // });
 
     // Demo: /bussiness?email=income@gmail.com
+    // GET ~~~~~~~~~~~Business
     app.get("/bussiness", async (req, res) => {
       try {
         const queryEmail = req.query.email;
@@ -1075,14 +953,52 @@ async function run() {
       try {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
-        const query = { _id: new ObjectId(id) }
+        const query = { _id: new ObjectId(id) };
         const result = await businessesCollection.find(query).toArray();
         res.send(result);
       } catch (error) {
-        console.log("Error On get Business id");
+        // console.log("Error On get Business id");
         res.send(error.message);
       }
     });
+
+
+
+    // payment intent for stripe
+    app.post('/create-payment-intent', async(req,res)=>{
+      const {price}=req.body;
+      if (isNaN(price) || price <= 0) {
+        return res.status(400).json({ error: 'Invalid or missing price value.' });
+      }
+      const amount = parseInt(price*100)
+      console.log(amount)
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+
+    })
+
+
+      // save payment
+     app.post('/payments', async(req,res)=>{
+        const payment = req.body;
+        const paymentResult = await paymentCollection.insertOne(payment)
+        res.send({paymentResult })
+  
+      })
+
+      app.get('/payments', async (req, res) => {
+            
+        const result = await paymentCollection.find().toArray()
+        res.send(result)
+    })
 
 
 
