@@ -766,7 +766,7 @@ async function run() {
         const result = await blogCollection.insertOne(newBlogs);
         res.send(result);
       } catch (error) {
-        res.send(error);
+        res.send(error);   
       }
     });
 
@@ -963,6 +963,78 @@ async function run() {
     });
 
 
+    //--------------------------- Admin Dashboard Api -------------------------
+
+
+    app.put('/user/:email' ,async(req , res) =>{
+
+        const email = req.params.email
+        // const updateUser = {isVerified : "true"}
+        // console.log(email ,updateUser)
+
+        const filter = { email : email};
+        const options ={ upsert: true };
+        const updateDoc = {
+          $set: {
+            isVerified : "true"
+          },
+        };
+
+        const result = await usersCollection.updateOne(filter, updateDoc, options);
+        res.send(result)
+        console.log(result)
+  
+      })
+
+      
+    app.put('/blog/:id' ,async(req , res) =>{
+
+        const id = req?.params.id
+        console.log(id);
+
+        const filter = {_id : new ObjectId(id)};
+        const options ={ upsert: true };
+        const updateDoc = {
+          $set: {
+            isVerified : "true"
+          },
+        };
+
+        const result = await blogCollection.updateOne(filter, updateDoc, options);
+        res.send(result)
+        console.log(result)
+  
+      })
+      
+      
+    app.put('/business/:id' ,async(req , res) =>{
+
+        const id = req?.params.id
+        console.log(id);
+
+        const filter = {_id : new ObjectId(id)};
+        const options ={ upsert: true };
+        const updateDoc = {
+          $set: {
+            isVerified : "true"
+          },
+        };
+
+        const result = await businessesCollection.updateOne(filter, updateDoc, options);
+        res.send(result)
+        console.log(result)
+  
+      })
+
+
+
+  
+
+
+
+
+
+
 
     // payment intent for stripe
     app.post('/create-payment-intent', async(req,res)=>{
@@ -1020,3 +1092,4 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening on port ${port}!`);
 });
+ 
