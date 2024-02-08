@@ -934,6 +934,7 @@ async function run() {
 
     //* GET single Blog Data *//
     app.get("/blogs/:id", async (req, res) => {
+      // console.log(req.query);
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await blogCollection.findOne(query);
@@ -956,6 +957,44 @@ async function run() {
       const result = await blogCollection.updateOne(query, updatedDoc);
       res.send(result);
     });
+
+
+    app.get("/blog/:email", async (req, res) => {
+      // console.log(req.query);
+      const email = req.params?.email;
+      const query = {authorEmail : email };
+      const result = await blogCollection.find(query).toArray();
+      res.send(result);
+      // console.log(result);
+    });
+
+
+
+    //* update data *//
+    // app.patch("/blog/:email", async (req, res) => {
+    //   const { id } = req.params;
+    //   const data = req.body;
+     
+    //   const updatedDoc = {
+    //     $push: {
+    //       title: data?.title,
+    //       description: data?.description,
+    //       image: data?.image,
+    //     },
+    //   };
+
+    //   const result = await blogCollection.updateOne(query, updatedDoc);
+    //   res.send(result);
+    // });
+
+
+
+
+
+
+
+
+
 
     //************************************ END of Blog realated API  ***************************//
 
