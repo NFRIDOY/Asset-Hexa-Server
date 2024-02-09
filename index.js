@@ -1068,6 +1068,26 @@ async function run() {
 
 
 
+      app.get("/adminState" , async (req , res) => {
+
+        const blogCount = await blogCollection.estimatedDocumentCount()
+        const userCount = await usersCollection.estimatedDocumentCount()
+        const transectionsCount = await transectionsCollection.estimatedDocumentCount()
+        const businessCount = await businessesCollection.estimatedDocumentCount()
+        const newsLetterSubscriptionCount = await newsLetterSubscriptionCollection.estimatedDocumentCount()
+     
+
+        
+        res.json({
+            userCount,
+            blogCount,businessCount,
+            transectionsCount,
+            newsLetterSubscriptionCount 
+          });
+    })
+
+
+
   
 
 
