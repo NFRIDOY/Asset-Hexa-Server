@@ -824,6 +824,39 @@ async function run() {
     });
 
 
+    // Delete blogs 
+
+
+    app.delete("/blogs/:id" , async (req , res) => {
+
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id )}
+      const result = await blogCollection.deleteOne(query);
+      res.send(result);
+
+    })
+
+    //* put blogs data  data *//
+    // app.put("/blogs/:id", async (req, res) => {
+    //   const { id } = req.params;
+      
+    //   const data = req.body;
+    //   const query = {
+    //     _id: new ObjectId(id),
+    //   };
+      
+    //     updatedDoc = {
+    //       $push: {
+    //         ,
+    //       },
+    //     };
+      
+
+    //   const result = await blogCollection.updateOne(query, updatedDoc);
+    //   res.send(result);
+    // });
+
+
     app.get("/blog/:email", async (req, res) => {
       // console.log(req.query);
       const email = req.params?.email;
@@ -834,24 +867,6 @@ async function run() {
     });
 
 
-
-    //* update data *//
-    // app.patch("/blog/:email", async (req, res) => {
-    //   const { id } = req.params;
-    //   const data = req.body;
-     
-    //   const updatedDoc = {
-    //     $push: {
-    //       title: data?.title,
-    //       description: data?.description,
-    //       image: data?.image,
-    //     },
-    //   };
-
-    //   const result = await blogCollection.updateOne(query, updatedDoc);
-    //   res.send(result);
-    // console.log(result);
-    // });
 
 
 
