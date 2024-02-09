@@ -850,6 +850,7 @@ async function run() {
 
     //   const result = await blogCollection.updateOne(query, updatedDoc);
     //   res.send(result);
+    // console.log(result);
     // });
 
 
