@@ -1082,26 +1082,67 @@ async function run() {
     })
 
     app.put('/businessInvest/:id', async (req, res) => {
+      try {
 
-      const id = req?.params.id
-      const InvestmentObj = req?.body;
-      const newInvestment = InvestmentObj?.invest;
-      const query = { _id: new ObjectId(id) };
-      const thisBusiness = await businessesCollection.findOne(query);
-      const totalInvestment = thisBusiness?.totalInvestment + newInvestment;
-      // console.log(id);
+        const id = req?.params.id
+        const InvestmentObj = req?.body;
+        const newInvestment = InvestmentObj?.invest;
 
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: {
-          totalInvestment: totalInvestment
-        },
-      };
+        // get the business with id.
+        const query = { _id: new ObjectId(id) };
+        const thisBusiness = await businessesCollection.findOne(query);
 
-      const result = await businessesCollection.updateOne(filter, updateDoc, options);
-      res.send(result)
-      // console.log(result)
+        // adding the investment money with old total investment
+        const totalInvestment = thisBusiness?.totalInvestment + newInvestment;
+        // console.log(id);
+
+        // investmentOwner is an array of business owners
+        const investors = thisBusiness?.investmentOwner;
+
+        investors.push(InvestmentObj);
+
+        // const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            totalInvestment: totalInvestment,
+            // add investor
+            investmentOwner: investors
+          },
+          // $push: {
+          //   investmentOwner: InvestmentObj?.investor
+          // }
+        };
+
+        const result = await businessesCollection.updateOne(query, updateDoc, options);
+        const addToInvestments = await investmentsCollection.insertOne({...InvestmentObj,...thisBusiness});
+
+
+        res.send({ result, addToInvestments })
+        // console.log(result)
+      } catch (error) {
+        console.log(error);
+      }
+
+    })
+
+    app.get("/investments", async (req, res) => {
+      try {
+        const queryEmail = req.query.email;
+        const filter = { investor: queryEmail };
+        let result;
+        if (queryEmail) {
+          result = await investmentsCollection.find(filter).toArray();
+        }
+        else {
+          result = await investmentsCollection.find().toArray();
+
+        }
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+
 
     })
 
