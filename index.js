@@ -1115,14 +1115,34 @@ async function run() {
         };
 
         const result = await businessesCollection.updateOne(query, updateDoc, options);
-        const addToInvestments = await investmentsCollection.insertOne(InvestmentObj);
+        const addToInvestments = await investmentsCollection.insertOne({...InvestmentObj,...thisBusiness});
 
-        
-        res.send({result, addToInvestments})
+
+        res.send({ result, addToInvestments })
         // console.log(result)
       } catch (error) {
         console.log(error);
       }
+
+    })
+
+    app.get("/investments", async (req, res) => {
+      try {
+        const queryEmail = req.query.email;
+        const filter = { investor: queryEmail };
+        let result;
+        if (queryEmail) {
+          result = await investmentsCollection.find(filter).toArray();
+        }
+        else {
+          result = await investmentsCollection.find().toArray();
+
+        }
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+
 
     })
 
