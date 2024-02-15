@@ -631,7 +631,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -766,7 +766,7 @@ async function run() {
         const result = await blogCollection.insertOne(newBlogs);
         res.send(result);
       } catch (error) {
-        res.send(error);   
+        res.send(error);
       }
     });
 
@@ -824,34 +824,49 @@ async function run() {
     });
 
 
+    // Delete blogs 
+
+
+    app.delete("/blogs/:id", async (req, res) => {
+
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await blogCollection.deleteOne(query);
+      res.send(result);
+
+    })
+
+    //* put blogs data  data *//
+    // app.put("/blogs/:id", async (req, res) => {
+    //   const { id } = req.params;
+
+    //   const data = req.body;
+    //   const query = {
+    //     _id: new ObjectId(id),
+    //   };
+
+    //     updatedDoc = {
+    //       $push: {
+    //         ,
+    //       },
+    //     };
+
+
+    //   const result = await blogCollection.updateOne(query, updatedDoc);
+    //   res.send(result);
+    // });
+
+
     app.get("/blog/:email", async (req, res) => {
       // console.log(req.query);
       const email = req.params?.email;
-      const query = {authorEmail : email };
+      const query = { authorEmail: email };
       const result = await blogCollection.find(query).toArray();
       res.send(result);
       // console.log(result);
     });
 
 
-
-    //* update data *//
-    // app.patch("/blog/:email", async (req, res) => {
-    //   const { id } = req.params;
-    //   const data = req.body;
-     
-    //   const updatedDoc = {
-    //     $push: {
-    //       title: data?.title,
-    //       description: data?.description,
-    //       image: data?.image,
-    //     },
-    //   };
-
-    //   const result = await blogCollection.updateOne(query, updatedDoc);
-    //   res.send(result);
-    // console.log(result);
-    // });
 
 
 
@@ -894,7 +909,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -1006,89 +1021,154 @@ async function run() {
     //--------------------------- Admin Dashboard Api -------------------------
 
 
-    app.put('/user/:email' ,async(req , res) =>{
+    app.put('/user/:email', async (req, res) => {
 
-        const email = req.params.email
-        // const updateUser = {isVerified : "true"}
-        // console.log(email ,updateUser)
+      const email = req.params.email
+      // const updateUser = {isVerified : "true"}
+      // console.log(email ,updateUser)
 
-        const filter = { email : email};
-        const options ={ upsert: true };
-        const updateDoc = {
-          $set: {
-            isVerified : "true"
-          },
-        };
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          isVerified: "true"
+        },
+      };
 
-        const result = await usersCollection.updateOne(filter, updateDoc, options);
-        res.send(result)
-        console.log(result)
-  
-      })
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+      console.log(result)
 
-      
-    app.put('/blog/:id' ,async(req , res) =>{
+    })
+
+
+    app.put('/blog/:id', async (req, res) => {
+
+      const id = req?.params.id
+      console.log(id);
+
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          isVerified: "true"
+        },
+      };
+
+      const result = await blogCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+      console.log(result)
+
+    })
+
+
+    app.put('/business/:id', async (req, res) => {
+
+      const id = req?.params.id
+      console.log(id);
+
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          isVerified: "true"
+        },
+      };
+
+      const result = await businessesCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+      console.log(result)
+
+    })
+
+    app.put('/businessInvest/:id', async (req, res) => {
+      try {
 
         const id = req?.params.id
-        console.log(id);
+        const InvestmentObj = req?.body;
+        const newInvestment = InvestmentObj?.invest;
 
-        const filter = {_id : new ObjectId(id)};
-        const options ={ upsert: true };
+        // get the business with id.
+        const query = { _id: new ObjectId(id) };
+        const thisBusiness = await businessesCollection.findOne(query);
+
+        // adding the investment money with old total investment
+        const totalInvestment = thisBusiness?.totalInvestment + newInvestment;
+        // console.log(id);
+
+        // investmentOwner is an array of business owners
+        const investors = thisBusiness?.investmentOwner;
+
+        investors.push(InvestmentObj);
+
+        // const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
         const updateDoc = {
           $set: {
-            isVerified : "true"
+            totalInvestment: totalInvestment,
+            // add investor
+            investmentOwner: investors
           },
+          // $push: {
+          //   investmentOwner: InvestmentObj?.investor
+          // }
         };
 
-        const result = await blogCollection.updateOne(filter, updateDoc, options);
-        res.send(result)
-        console.log(result)
-  
-      })
-      
-      
-    app.put('/business/:id' ,async(req , res) =>{
-
-        const id = req?.params.id
-        console.log(id);
-
-        const filter = {_id : new ObjectId(id)};
-        const options ={ upsert: true };
-        const updateDoc = {
-          $set: {
-            isVerified : "true"
-          },
-        };
-
-        const result = await businessesCollection.updateOne(filter, updateDoc, options);
-        res.send(result)
-        console.log(result)
-  
-      })
+        const result = await businessesCollection.updateOne(query, updateDoc, options);
+        const addToInvestments = await investmentsCollection.insertOne({...InvestmentObj,...thisBusiness});
 
 
+        res.send({ result, addToInvestments })
+        // console.log(result)
+      } catch (error) {
+        console.log(error);
+      }
 
-      app.get("/adminState" , async (req , res) => {
+    })
 
-        const blogCount = await blogCollection.estimatedDocumentCount()
-        const userCount = await usersCollection.estimatedDocumentCount()
-        const transectionsCount = await transectionsCollection.estimatedDocumentCount()
-        const businessCount = await businessesCollection.estimatedDocumentCount()
-        const newsLetterSubscriptionCount = await newsLetterSubscriptionCollection.estimatedDocumentCount()
-     
+    app.get("/investments", async (req, res) => {
+      try {
+        const queryEmail = req.query.email;
+        const filter = { investor: queryEmail };
+        let result;
+        if (queryEmail) {
+          result = await investmentsCollection.find(filter).toArray();
+        }
+        else {
+          result = await investmentsCollection.find().toArray();
 
-        
-        res.json({
-            userCount,
-            blogCount,businessCount,
-            transectionsCount,
-            newsLetterSubscriptionCount 
-          });
+        }
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+
+
     })
 
 
 
-  
+    app.get("/adminState", async (req, res) => {
+
+      const blogCount = await blogCollection.estimatedDocumentCount()
+      const userCount = await usersCollection.estimatedDocumentCount()
+      const transectionsCount = await transectionsCollection.estimatedDocumentCount()
+      const businessCount = await businessesCollection.estimatedDocumentCount()
+      const newsLetterSubscriptionCount = await newsLetterSubscriptionCollection.estimatedDocumentCount()
+
+
+
+      res.json({
+        userCount,
+        blogCount, businessCount,
+        transectionsCount,
+        newsLetterSubscriptionCount
+      });
+    })
+
+
+
+
 
 
 
@@ -1097,12 +1177,12 @@ async function run() {
 
 
     // payment intent for stripe
-    app.post('/create-payment-intent', async(req,res)=>{
-      const {price}=req.body;
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
       if (isNaN(price) || price <= 0) {
         return res.status(400).json({ error: 'Invalid or missing price value.' });
       }
-      const amount = parseInt(price*100)
+      const amount = parseInt(price * 100)
       console.log(amount)
 
       const paymentIntent = await stripe.paymentIntents.create({
@@ -1118,18 +1198,18 @@ async function run() {
     })
 
 
-      // save payment
-     app.post('/payments', async(req,res)=>{
-        const payment = req.body;
-        const paymentResult = await paymentCollection.insertOne(payment)
-        res.send({paymentResult })
-  
-      })
+    // save payment
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment)
+      res.send({ paymentResult })
 
-      app.get('/payments', async (req, res) => {
-            
-        const result = await paymentCollection.find().toArray()
-        res.send(result)
+    })
+
+    app.get('/payments', async (req, res) => {
+
+      const result = await paymentCollection.find().toArray()
+      res.send(result)
     })
 
 
@@ -1152,4 +1232,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening on port ${port}!`);
 });
- 
