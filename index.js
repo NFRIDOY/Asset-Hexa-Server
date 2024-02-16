@@ -1115,7 +1115,26 @@ async function run() {
         };
 
         const result = await businessesCollection.updateOne(query, updateDoc, options);
-        const addToInvestments = await investmentsCollection.insertOne({...InvestmentObj,...thisBusiness});
+
+        const newInvestmentObj = {
+          CompanyName: InvestmentObj?.CompanyName,
+          CompanyEmail: InvestmentObj?.CompanyEmail,
+          BrandImage: InvestmentObj?.BrandImage,
+          BannerImage: InvestmentObj?.BannerImage,
+          Designation: InvestmentObj?.Designation,
+          userEmail: InvestmentObj?.userEmail,
+          CompanyDescription: InvestmentObj?.CompanyDescription,
+          Minimum: InvestmentObj?.Minimum,
+          Maximum: InvestmentObj?.Maximum,
+          Profit: InvestmentObj?.Profit,
+          postTime: InvestmentObj?.time,
+          userName: InvestmentObj?.userName,
+          photoURL: InvestmentObj?.photoURL,
+          companyVarification: InvestmentObj?.companyVarification,
+          totalInvestment: InvestmentObj?.totalInvestment,
+
+        }
+        const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
 
 
         res.send({ result, addToInvestments })
