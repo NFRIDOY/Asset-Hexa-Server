@@ -49,10 +49,8 @@ async function run() {
     );
     const businessesCollection = database.collection("businesses");
     const investmentsCollection = database.collection("investments");
-
-    const paymentCollection = database.collection("payments")
-    const notificationCollection = database.collection("notification")
-
+    const paymentCollection = database.collection("payments");
+    const notificationCollection = database.collection("notification");
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -245,6 +243,25 @@ async function run() {
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?&email=backend@example.com) => all translations
+    app.get("/transections", async (req, res) => {
+      try {
+        const transQuery = req.query.type;
+        const emailQuery = req.query.email;
+        let query = {};
+        // console.log(transQuery);
+        // console.log(emailQuery);
+        if (transQuery) {
+          query = { type: transQuery, email: emailQuery };
+        } else {
+          query = { email: emailQuery };
+        }
+        const cursor = transectionsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    });
     app.get("/transections", async (req, res) => {
       try {
         const transQuery = req.query.type;
@@ -662,16 +679,17 @@ async function run() {
         const result = await blogCollection.insertOne(newBlogs);
         console.log(newBlogs);
         const notificationData = {
-          userName : newBlogs.author,
-          date : newBlogs.time,
-          photoURL : newBlogs.authorImage,
-          title : newBlogs.title   ,
-          type: "blog"
-        }
-        
-        const notificationResult = await notificationCollection.insertOne(notificationData);
-        res.send(result)
+          userName: newBlogs.author,
+          date: newBlogs.time,
+          photoURL: newBlogs.authorImage,
+          title: newBlogs.title,
+          type: "blog",
+        };
 
+        const notificationResult = await notificationCollection.insertOne(
+          notificationData
+        );
+        res.send(result);
       } catch (error) {
         res.send(error);
       }
@@ -855,18 +873,19 @@ async function run() {
         console.log(newBusiness);
         // console.log(newBlogs)
         const result = await businessesCollection.insertOne(newBusiness);
-        res.send(result);  
-        
-        const notificationData = {
-          userName : newBusiness.userName,
-          company : newBusiness.CompanyName,
-          date : newBusiness.time,
-          photoURL : newBusiness.photoURL,
-          type: "business",
-        }
-        console.log(notificationData);
-        const notification = await notificationCollection.insertOne(notificationData);
+        res.send(result);
 
+        const notificationData = {
+          userName: newBusiness.userName,
+          company: newBusiness.CompanyName,
+          date: newBusiness.time,
+          photoURL: newBusiness.photoURL,
+          type: "business",
+        };
+        console.log(notificationData);
+        const notification = await notificationCollection.insertOne(
+          notificationData
+        );
       } catch (error) {
         console.log("error on POST /bussiness");
       }
@@ -1010,8 +1029,11 @@ async function run() {
           // }
         };
 
-
-        const result = await businessesCollection.updateOne(query, updateDoc, options);
+        const result = await businessesCollection.updateOne(
+          query,
+          updateDoc,
+          options
+        );
 
         const newInvestmentObj = {
           CompanyName: InvestmentObj?.CompanyName,
@@ -1029,21 +1051,18 @@ async function run() {
           photoURL: InvestmentObj?.photoURL,
           companyVarification: InvestmentObj?.companyVarification,
           totalInvestment: InvestmentObj?.totalInvestment,
-
-        }
-        const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
-
+        };
+        const addToInvestments = await investmentsCollection.insertOne(
+          newInvestmentObj
+        );
 
         res.send({ result, addToInvestments });
         // console.log(result)
       } catch (error) {
         // console.log(error);
         res.send({ error: error.message });
-        
       }
     });
-
-    
 
     app.get("/investments", async (req, res) => {
       try {
@@ -1108,20 +1127,16 @@ async function run() {
       res.send({ paymentResult });
     });
 
-
-    app.get("/notifications" ,async(req , res )=>{
-      const cursor = notificationCollection.find().sort({ date: -1 }).limit(6)
-      const result = await cursor.toArray()
-      res.send(result)
-  })
-
-
+    app.get("/notifications", async (req, res) => {
+      const cursor = notificationCollection.find().sort({ date: -1 }).limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     });
-
 
     await client.db("admin").command({ ping: 1 });
     console.log(
