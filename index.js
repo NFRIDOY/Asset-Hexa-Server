@@ -1010,7 +1010,6 @@ async function run() {
           // }
         };
 
-<<<<<<< HEAD
         const result = await businessesCollection.updateOne(query, updateDoc, options);
 
         const newInvestmentObj = {
@@ -1032,22 +1031,13 @@ async function run() {
 
         }
         const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
-=======
-        const result = await businessesCollection.updateOne(
-          query,
-          updateDoc,
-          options
-        );
-        const addToInvestments = await investmentsCollection.insertOne({
-          ...InvestmentObj,
-          ...thisBusiness,
-        });
->>>>>>> 9beb77b033a9fa6aabaea37e43d3a1fa25a9eb1e
 
         res.send({ result, addToInvestments });
         // console.log(result)
       } catch (error) {
-        console.log(error);
+        // console.log(error);
+        res.send({ error: error.message });
+        
       }
     });
 
