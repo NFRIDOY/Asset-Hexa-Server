@@ -50,6 +50,7 @@ async function run() {
     const businessesCollection = database.collection("businesses");
     const investmentsCollection = database.collection("investments");
     const paymentCollection = database.collection("payments")
+    const notificationCollection = database.collection("notification")
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -764,7 +765,18 @@ async function run() {
         const newBlogs = req.body;
         // console.log(newBlogs)
         const result = await blogCollection.insertOne(newBlogs);
-        res.send(result);
+        console.log(newBlogs);
+        const notificationData = {
+          userName : newBlogs.author,
+          date : newBlogs.time,
+          photoURL : newBlogs.authorImage,
+          title : newBlogs.title   ,
+          type: "blog"
+        }
+        
+        const notificationResult = await notificationCollection.insertOne(notificationData);
+        res.send(result)
+
       } catch (error) {
         res.send(error);
       }
@@ -963,9 +975,21 @@ async function run() {
     app.post("/bussiness", async (req, res) => {
       try {
         const newBusiness = req.body;
+        console.log(newBusiness);
         // console.log(newBlogs)
         const result = await businessesCollection.insertOne(newBusiness);
-        res.send(result);
+        res.send(result);  
+        
+        const notificationData = {
+          userName : newBusiness.userName,
+          company : newBusiness.CompanyName,
+          date : newBusiness.time,
+          photoURL : newBusiness.photoURL,
+          type: "business",
+        }
+        console.log(notificationData);
+        const notification = await notificationCollection.insertOne(notificationData);
+
       } catch (error) {
         console.log("error on POST /bussiness");
       }
@@ -1126,6 +1150,8 @@ async function run() {
 
     })
 
+    
+
     app.get("/investments", async (req, res) => {
       try {
         const queryEmail = req.query.email;
@@ -1211,6 +1237,13 @@ async function run() {
       const result = await paymentCollection.find().toArray()
       res.send(result)
     })
+
+
+    app.get("/notifications" ,async(req , res )=>{
+      const cursor = notificationCollection.find().sort({ date: -1 }).limit(6)
+      const result = await cursor.toArray()
+      res.send(result)
+  })
 
 
 
