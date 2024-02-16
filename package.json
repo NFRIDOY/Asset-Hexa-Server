@@ -20,6 +20,7 @@
     "mongodb": "^6.3.0",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.8",
+    "socket.io": "^4.7.4",
     "stripe": "^14.15.0"
   }
 }
