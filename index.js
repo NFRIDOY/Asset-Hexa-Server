@@ -1010,6 +1010,7 @@ async function run() {
           // }
         };
 
+
         const result = await businessesCollection.updateOne(query, updateDoc, options);
 
         const newInvestmentObj = {
@@ -1031,6 +1032,7 @@ async function run() {
 
         }
         const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
+
 
         res.send({ result, addToInvestments });
         // console.log(result)
