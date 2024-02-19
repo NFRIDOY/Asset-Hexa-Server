@@ -749,32 +749,12 @@ async function run() {
     });
 
     // Delete blogs
-
     app.delete("/blogs/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await blogCollection.deleteOne(query);
       res.send(result);
     });
-
-    //* put blogs data  data *//
-    // app.put("/blogs/:id", async (req, res) => {
-    //   const { id } = req.params;
-
-    //   const data = req.body;
-    //   const query = {
-    //     _id: new ObjectId(id),
-    //   };
-
-    //     updatedDoc = {
-    //       $push: {
-    //         ,
-    //       },
-    //     };
-
-    //   const result = await blogCollection.updateOne(query, updatedDoc);
-    //   res.send(result);
-    // });
 
     app.get("/blog/:email", async (req, res) => {
       // console.log(req.query);
@@ -783,6 +763,32 @@ async function run() {
       const result = await blogCollection.find(query).toArray();
       res.send(result);
       // console.log(result);
+    });
+
+    // delete like or dislike
+    // http://localhost:5000/blog/deleteLD/65c245ffd4be3bbc893bd93a?email=ariful2634@gmail.com&queryArray=dislike
+    app.delete("/blog/deleteLD/:id", async (req, res) => {
+      const id = req?.params?.id;
+      const email = req?.query?.email;
+      const query = req?.query?.queryArray;
+      // console.log(id, email, query);
+      try {
+        if (query === "like") {
+          const result = await blogCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $pull: { likes: { personEmail: email } } }
+          );
+          return res.send(result);
+        } else {
+          const result = await blogCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $pull: { dislikes: { personEmail: email } } }
+          );
+          return res.send(result);
+        }
+      } catch (error) {
+        res.send({ error: error.message });
+      }
     });
 
     //************************************ END of Blog realated API  ***************************//
@@ -848,24 +854,6 @@ async function run() {
     // <<<<<<<<< Temporary merge branch 1=========
 
     // >>>>>>>>> Temporary merge branch 2
-
-    //* patch a signle data *//
-    // app.patch("/blogs/:id", async (req, res) => {
-    //   const { id } = req.params;
-    //   const data = req.body;
-    //   const query = {
-    //     _id: new ObjectId(id),
-    //   };
-    //   const updatedDoc = {
-    //     $push: {
-    //       likes: data,
-    //     },
-    //   };
-
-    //   const result = await blogCollection.updateOne(query, updatedDoc);
-    //   res.send(result);
-    // });
-
     // Post ~~~~~~~~~~~Business Form submission
     app.post("/bussiness", async (req, res) => {
       try {
@@ -961,7 +949,7 @@ async function run() {
 
     app.put("/blog/:id", async (req, res) => {
       const id = req?.params.id;
-      console.log(id);
+      // console.log(id);
 
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -973,7 +961,7 @@ async function run() {
 
       const result = await blogCollection.updateOne(filter, updateDoc, options);
       res.send(result);
-      console.log(result);
+      // console.log(result);
     });
 
     app.put("/business/:id", async (req, res) => {
