@@ -5,7 +5,7 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 const { getIncomeExpenseChartData } = require("./utils/chatData");
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // req
 app.use(express.json());
@@ -49,8 +49,8 @@ async function run() {
     );
     const businessesCollection = database.collection("businesses");
     const investmentsCollection = database.collection("investments");
-    const paymentCollection = database.collection("payments")
-    const notificationCollection = database.collection("notification")
+    const paymentCollection = database.collection("payments");
+    const notificationCollection = database.collection("notification");
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -243,76 +243,95 @@ async function run() {
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?&email=backend@example.com) => all translations
-    // app.get("/transections", async (req, res) => {
-    //   try {
-    //     const transQuery = req.query.type;
-    //     const emailQuery = req.query.email;
-    //     let query = {};
-    //     // console.log(transQuery);
-    //     // console.log(emailQuery);
-    //     if (transQuery) {
-    //       query = { type: transQuery, email: emailQuery };
-    //     } else {
-    //       query = { email: emailQuery };
-    //     }
-    //     const cursor = transectionsCollection.find(query);
-    //     const result = await cursor.toArray();
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.status(500).json({ message: error.message });
-    //   }
-    // });
+    app.get("/transections", async (req, res) => {
+      try {
+        const transQuery = req.query.type;
+        const emailQuery = req.query.email;
+        let query = {};
+        // console.log(transQuery);
+        // console.log(emailQuery);
+        if (transQuery) {
+          query = { type: transQuery, email: emailQuery };
+        } else {
+          query = { email: emailQuery };
+        }
+        const cursor = transectionsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    });
+    app.get("/transections", async (req, res) => {
+      try {
+        const transQuery = req.query.type;
+        const emailQuery = req.query.email;
+        let query = {};
+        // console.log(transQuery);
+        // console.log(emailQuery);
+        if (transQuery) {
+          query = { type: transQuery, email: emailQuery };
+        } else {
+          query = { email: emailQuery };
+        }
+        const cursor = transectionsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    });
 
     // delete
 
-    // app.delete("/transections/:id", async (req, res) => {
-    //   try {
-    //     const id = req.params.id;
-    //     const query = { _id: new ObjectId(id) };
-    //     const result = await transectionsCollection.deleteOne(query);
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
+    app.delete("/transections/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await transectionsCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
 
     // find one
 
-    // app.get("/transections/:id", async (req, res) => {
-    //   try {
-    //     const id = req.params.id;
-    //     const query = { _id: new ObjectId(id) };
-    //     const result = await transectionsCollection.findOne(query);
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
+    app.get("/transections/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await transectionsCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
 
-    // // update
+    // update
 
-    // app.put("/transections/:id", async (req, res) => {
-    //   try {
-    //     const id = req.params.id;
-    //     const filter = { _id: new ObjectId(id) };
-    //     const options = { upsert: true };
-    //     const updateTransections = req.body;
-    //     const transections = {
-    //       $set: {
-    //         // TODO: update property
-    //       },
-    //     };
+    app.put("/transections/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateTransections = req.body;
+        const transections = {
+          $set: {
+            // TODO: update property
+          },
+        };
 
-    //     const result = await transectionsCollection.updateOne(
-    //       filter,
-    //       transections,
-    //       options
-    //     );
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
+        const result = await transectionsCollection.updateOne(
+          filter,
+          transections,
+          options
+        );
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
 
     app.get("/totalInExp", async (req, res) => {
       const userQueryEmail = req.query.email;
@@ -340,115 +359,8 @@ async function run() {
         return obj1 + obj2;
       }, 0);
 
-      // const allTrasTotal = allTras?.reduce((obj1, obj2) => {
-      //   return obj1?.amount + obj2?.amount;
-      // }, 0);
-
-      // console.log("all trans", allTras);
-      // console.log("all trans", allTrasTotal);
-
       res.send({ totalIncome, totalExpense });
     });
-
-    // for accounts
-    // create
-
-    // app.post("/accounts", async (req, res) => {
-    //   try {
-    //     const newAccounts = req.body;
-    //     // console.log(newAccounts)
-    //     const result = await accountsCollection.insertOne(newAccounts);
-    //     res.send(result);
-    //   } catch (error) {}
-    // });
-
-    // read
-
-    // app.get("/accounts", async (req, res) => {
-    //   try {
-    //     const emailQuery = req.query.email;
-    //     const query = { email: emailQuery };
-    //     const cursor = accountsCollection.find(query);
-    //     const result = await cursor.toArray();
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
-
-    // update accounts
-    // delete account
-
-    // add categories
-    // app.post("/categories", async (req, res) => {
-    //   try {
-    //     const catReq = req.body;
-    //     const result = await categoryCollection.insertOne(catReq);
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
-
-    // DEMO /categories?type=INCOME
-    // DEMO /categories?type=EXPENSE&email=backend@example.com
-    // app.get("/categories", async (req, res) => {
-    //   try {
-    //     // const catReq = req.body;
-    //     const catQuery = req.query.type;
-    //     const query = { type: catQuery };
-    //     const result = await categoryCollection.find(query).toArray();
-    //     res.send(result);
-    //     // if (catQuery === "INCOME") {
-    //     //     const query = { type: catQuery };
-    //     //     const result = await categoryCollection.find().toArray();
-    //     //     res.send(result)
-    //     // }
-    //     // else if (catQuery === "EXPENSE") {
-    //     //     const query = { type: catQuery };
-    //     //     const result = await categoryCollection.find().toArray();
-    //     //     res.send(result)
-    //     // }
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
-
-    // DEMO /catPi?type=INCOME&email=backend@example.com
-    // DEMO /catPi?type=EXPENSE&email=backend@example.com
-    // app.get("/catPi", async (req, res) => {
-    //   try {
-    //     const transQuery = req.query.type;
-    //     const emailQuery = req.query.email;
-    //     const query = { type: transQuery, email: emailQuery };
-
-    //     const cursor = await transectionsCollection.find(query).toArray();
-
-    //     const catPiData = cursor?.map((cat) => cat?.amount);
-    //     const catPiLebel = cursor?.map((cat) => cat?.category);
-    //     // console.log(catPiData);
-    //     res.send({ catPiData, catPiLebel });
-    //   } catch (error) {
-    //     res.send(error);
-    //   }
-    // });
-
-    // DEMO /accountPi?email=backend@example.com
-    // app.get("/accountPi", async (req, res) => {
-    //   try {
-    //     const emailQuery = req.query.email;
-    //     const query = { email: emailQuery };
-
-    //     const cursor = await accountsCollection.find(query).toArray();
-
-    //     const accPiData = cursor?.map((accAmount) => accAmount?.amount);
-    //     const accPiLebel = cursor?.map((accName) => accName?.account);
-    //     // console.log(catPiData);
-    //     res.send({ accPiData: accPiData, accPiLebel: accPiLebel });
-    //   } catch (error) {
-    //     res.send(error);
-    //   }
-    // });
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -559,69 +471,69 @@ async function run() {
     // DEMO /transections?type=EXPENSE
     // Example: https://asset-hexa-server.vercel.app/transections?type=INCOME&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
-    app.get("/transections", async (req, res) => {
-      try {
-        const transQuery = req.query.type;
-        const emailQuery = req.query.email;
-        const query = { type: transQuery, email: emailQuery };
-        const cursor = transectionsCollection.find(query);
-        const result = await cursor.toArray();
-        res.send(result);
-      } catch (error) {
-        res.status(500).json({ message: error.message });
-      }
-    });
+    // app.get("/transections", async (req, res) => {
+    //   try {
+    //     const transQuery = req.query?.type;
+    //     const emailQuery = req.query?.email;
+    //     const query = { type: transQuery, email: emailQuery };
+    //     const cursor = transectionsCollection.find(query);
+    //     const result = await cursor.toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.status(500).json({ message: error.message });
+    //   }
+    // });
 
-    // delete
+    // // delete
 
-    app.delete("/transections/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await transectionsCollection.deleteOne(query);
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    // app.delete("/transections/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const query = { _id: new ObjectId(id) };
+    //     const result = await transectionsCollection.deleteOne(query);
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
-    // find one
+    // // find one
 
-    app.get("/transections/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await transectionsCollection.findOne(query);
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    // app.get("/transections/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const query = { _id: new ObjectId(id) };
+    //     const result = await transectionsCollection.findOne(query);
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
-    // update
+    // // update
 
-    app.put("/transections/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const options = { upsert: true };
-        const updateTransections = req.body;
-        const transections = {
-          $set: {
-            // TODO: update property
-          },
-        };
+    // app.put("/transections/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const filter = { _id: new ObjectId(id) };
+    //     const options = { upsert: true };
+    //     const updateTransections = req.body;
+    //     const transections = {
+    //       $set: {
+    //         // TODO: update property
+    //       },
+    //     };
 
-        const result = await transectionsCollection.updateOne(
-          filter,
-          transections,
-          options
-        );
-        res.send(result);
-      } catch (error) {
-        res.send(error.message);
-      }
-    });
+    //     const result = await transectionsCollection.updateOne(
+    //       filter,
+    //       transections,
+    //       options
+    //     );
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     // for accounts
     // create
@@ -632,7 +544,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -775,9 +687,11 @@ async function run() {
           type: "blog"
         }
         
-        const notificationResult = await notificationCollection.insertOne(notificationData);
-        res.send(result)
 
+        const notificationResult = await notificationCollection.insertOne(
+          notificationData
+        );
+        res.send(result);
       } catch (error) {
         res.send(error);
       }
@@ -836,39 +750,13 @@ async function run() {
       res.send(result);
     });
 
-
-    // Delete blogs 
-
-
+    // Delete blogs
     app.delete("/blogs/:id", async (req, res) => {
-
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const result = await blogCollection.deleteOne(query);
       res.send(result);
-
-    })
-
-    //* put blogs data  data *//
-    // app.put("/blogs/:id", async (req, res) => {
-    //   const { id } = req.params;
-
-    //   const data = req.body;
-    //   const query = {
-    //     _id: new ObjectId(id),
-    //   };
-
-    //     updatedDoc = {
-    //       $push: {
-    //         ,
-    //       },
-    //     };
-
-
-    //   const result = await blogCollection.updateOne(query, updatedDoc);
-    //   res.send(result);
-    // });
-
+    });
 
     app.get("/blog/:email", async (req, res) => {
       // console.log(req.query);
@@ -879,16 +767,31 @@ async function run() {
       // console.log(result);
     });
 
-
-
-
-
-
-
-
-
-
-
+    // delete like or dislike
+    // http://localhost:5000/blog/deleteLD/65c245ffd4be3bbc893bd93a?email=ariful2634@gmail.com&queryArray=dislike
+    app.delete("/blog/deleteLD/:id", async (req, res) => {
+      const id = req?.params?.id;
+      const email = req?.query?.email;
+      const query = req?.query?.queryArray;
+      // console.log(id, email, query);
+      try {
+        if (query === "like") {
+          const result = await blogCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $pull: { likes: { personEmail: email } } }
+          );
+          return res.send(result);
+        } else {
+          const result = await blogCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $pull: { dislikes: { personEmail: email } } }
+          );
+          return res.send(result);
+        }
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
     //************************************ END of Blog realated API  ***************************//
 
@@ -922,7 +825,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -952,26 +855,7 @@ async function run() {
     });
     // <<<<<<<<< Temporary merge branch 1=========
 
-
     // >>>>>>>>> Temporary merge branch 2
-
-    //* patch a signle data *//
-    // app.patch("/blogs/:id", async (req, res) => {
-    //   const { id } = req.params;
-    //   const data = req.body;
-    //   const query = {
-    //     _id: new ObjectId(id),
-    //   };
-    //   const updatedDoc = {
-    //     $push: {
-    //       likes: data,
-    //     },
-    //   };
-
-    //   const result = await blogCollection.updateOne(query, updatedDoc);
-    //   res.send(result);
-    // });
-
     // Post ~~~~~~~~~~~Business Form submission
     app.post("/bussiness", async (req, res) => {
       try {
@@ -991,12 +875,14 @@ async function run() {
         console.log(notificationData);
         const notification = await notificationCollection.insertOne(notificationData);
 
+        
+        
       } catch (error) {
         console.log("error on POST /bussiness");
       }
     });
 
-    // GET ~~~~~~~~~~~Business 
+    // GET ~~~~~~~~~~~Business
     // Demo: /bussiness?email=income@gmail.com
     // app.get("/bussiness", async (req, res) => {
     //   try {
@@ -1017,10 +903,8 @@ async function run() {
         let result;
         if (queryEmail) {
           result = await businessesCollection.find(filter).toArray();
-        }
-        else {
+        } else {
           result = await businessesCollection.find().toArray();
-
         }
         res.send(result);
       } catch (error) {
@@ -1042,13 +926,10 @@ async function run() {
       }
     });
 
-
     //--------------------------- Admin Dashboard Api -------------------------
 
-
-    app.put('/user/:email', async (req, res) => {
-
-      const email = req.params.email
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
       // const updateUser = {isVerified : "true"}
       // console.log(email ,updateUser)
 
@@ -1056,60 +937,60 @@ async function run() {
       const options = { upsert: true };
       const updateDoc = {
         $set: {
-          isVerified: "true"
+          isVerified: "true",
         },
       };
 
-      const result = await usersCollection.updateOne(filter, updateDoc, options);
-      res.send(result)
-      console.log(result)
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+      console.log(result);
+    });
 
-    })
-
-
-    app.put('/blog/:id', async (req, res) => {
-
-      const id = req?.params.id
-      console.log(id);
+    app.put("/blog/:id", async (req, res) => {
+      const id = req?.params.id;
+      // console.log(id);
 
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
         $set: {
-          isVerified: "true"
+          isVerified: "true",
         },
       };
 
       const result = await blogCollection.updateOne(filter, updateDoc, options);
-      res.send(result)
-      console.log(result)
+      res.send(result);
+      // console.log(result);
+    });
 
-    })
-
-
-    app.put('/business/:id', async (req, res) => {
-
-      const id = req?.params.id
+    app.put("/business/:id", async (req, res) => {
+      const id = req?.params.id;
       console.log(id);
 
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
         $set: {
-          isVerified: "true"
+          isVerified: "true",
         },
       };
 
-      const result = await businessesCollection.updateOne(filter, updateDoc, options);
-      res.send(result)
-      console.log(result)
+      const result = await businessesCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+      console.log(result);
+    });
 
-    })
-
-    app.put('/businessInvest/:id', async (req, res) => {
+    app.put("/businessInvest/:id", async (req, res) => {
       try {
-
-        const id = req?.params.id
+        const id = req?.params.id;
         const InvestmentObj = req?.body;
         const newInvestment = InvestmentObj?.invest;
 
@@ -1132,26 +1013,47 @@ async function run() {
           $set: {
             totalInvestment: totalInvestment,
             // add investor
-            investmentOwner: investors
+            investmentOwner: investors,
           },
           // $push: {
           //   investmentOwner: InvestmentObj?.investor
           // }
         };
 
-        const result = await businessesCollection.updateOne(query, updateDoc, options);
-        const addToInvestments = await investmentsCollection.insertOne({...InvestmentObj,...thisBusiness});
+        const result = await businessesCollection.updateOne(
+          query,
+          updateDoc,
+          options
+        );
 
+        const newInvestmentObj = {
+          CompanyName: InvestmentObj?.CompanyName,
+          CompanyEmail: InvestmentObj?.CompanyEmail,
+          BrandImage: InvestmentObj?.BrandImage,
+          BannerImage: InvestmentObj?.BannerImage,
+          Designation: InvestmentObj?.Designation,
+          userEmail: InvestmentObj?.userEmail,
+          CompanyDescription: InvestmentObj?.CompanyDescription,
+          Minimum: InvestmentObj?.Minimum,
+          Maximum: InvestmentObj?.Maximum,
+          Profit: InvestmentObj?.Profit,
+          postTime: InvestmentObj?.time,
+          userName: InvestmentObj?.userName,
+          photoURL: InvestmentObj?.photoURL,
+          companyVarification: InvestmentObj?.companyVarification,
+          totalInvestment: InvestmentObj?.totalInvestment,
+        };
+        const addToInvestments = await investmentsCollection.insertOne(
+          newInvestmentObj
+        );
 
-        res.send({ result, addToInvestments })
+        res.send({ result, addToInvestments });
         // console.log(result)
       } catch (error) {
-        console.log(error);
+        // console.log(error);
+        res.send({ error: error.message });
       }
-
-    })
-
-    
+    });
 
     app.get("/investments", async (req, res) => {
       try {
@@ -1160,73 +1062,57 @@ async function run() {
         let result;
         if (queryEmail) {
           result = await investmentsCollection.find(filter).toArray();
-        }
-        else {
+        } else {
           result = await investmentsCollection.find().toArray();
-
         }
         res.send(result);
       } catch (error) {
         res.send(error.message);
       }
-
-
-    })
-
-
+    });
 
     app.get("/adminState", async (req, res) => {
-
-      const blogCount = await blogCollection.estimatedDocumentCount()
-      const userCount = await usersCollection.estimatedDocumentCount()
-      const transectionsCount = await transectionsCollection.estimatedDocumentCount()
-      const businessCount = await businessesCollection.estimatedDocumentCount()
-      const newsLetterSubscriptionCount = await newsLetterSubscriptionCollection.estimatedDocumentCount()
-
-
+      const blogCount = await blogCollection.estimatedDocumentCount();
+      const userCount = await usersCollection.estimatedDocumentCount();
+      const transectionsCount =
+        await transectionsCollection.estimatedDocumentCount();
+      const businessCount = await businessesCollection.estimatedDocumentCount();
+      const newsLetterSubscriptionCount =
+        await newsLetterSubscriptionCollection.estimatedDocumentCount();
 
       res.json({
         userCount,
-        blogCount, businessCount,
+        blogCount,
+        businessCount,
         transectionsCount,
-        newsLetterSubscriptionCount
+        newsLetterSubscriptionCount,
       });
-    })
-
-
-
-
-
-
-
-
-
-
+    });
 
     // payment intent for stripe
-    app.post('/create-payment-intent', async (req, res) => {
+    app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       if (isNaN(price) || price <= 0) {
-        return res.status(400).json({ error: 'Invalid or missing price value.' });
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing price value." });
       }
-      const amount = parseInt(price * 100)
-      console.log(amount)
+      const amount = parseInt(price * 100);
+      console.log(amount);
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
-        currency: 'usd',
-        payment_method_types: ['card']
+        currency: "usd",
+        payment_method_types: ["card"],
       });
 
       res.send({
-        clientSecret: paymentIntent.client_secret
-      })
-
-    })
-
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
 
     // save payment
-    app.post('/payments', async (req, res) => {
+    app.post("/payments", async (req, res) => {
       const payment = req.body;
       const paymentResult = await paymentCollection.insertOne(payment)
       res.send({ paymentResult })
@@ -1251,6 +1137,10 @@ async function run() {
   
 
 
+    app.get("/payments", async (req, res) => {
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
