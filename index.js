@@ -77,6 +77,16 @@ async function run() {
       res.send(result);
     });
 
+
+    
+    // Get single  user 
+    
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email
+      const result = await usersCollection.findOne({ email })
+      res.send(result)
+    })
+
     app.post("/transections", async (req, res) => {
       try {
         // const id = req.params.id;
