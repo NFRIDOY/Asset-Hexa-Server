@@ -768,7 +768,8 @@ async function run() {
         console.log(newBlogs);
         const notificationData = {
           userName : newBlogs.author,
-          date : newBlogs.time,
+          date : new Date(),
+
           photoURL : newBlogs.authorImage,
           title : newBlogs.title   ,
           type: "blog"
@@ -983,7 +984,7 @@ async function run() {
         const notificationData = {
           userName : newBusiness.userName,
           company : newBusiness.CompanyName,
-          date : newBusiness.time,
+          date : new Date(),
           photoURL : newBusiness.photoURL,
           type: "business",
         }
@@ -1240,10 +1241,14 @@ async function run() {
 
 
     app.get("/notifications" ,async(req , res )=>{
-      const cursor = notificationCollection.find().sort({ date: -1 }).limit(6)
-      const result = await cursor.toArray()
+      const cursor = await notificationCollection.find().sort({ date: -1 }).limit(20).toArray()
+      
+      const result = cursor.sort((a, b) => b.date - a.date).slice(0,6)
       res.send(result)
+      
   })
+
+  
 
 
 
