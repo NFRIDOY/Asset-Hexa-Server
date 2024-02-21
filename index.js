@@ -554,7 +554,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -570,6 +570,56 @@ async function run() {
         res.send(error.message);
       }
     });
+
+    // delete account 
+
+    app.delete("/accounts/:id", async (req, res) => {
+      try {
+        const id = req.params?.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await accountsCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+    
+    // update account 
+
+    app.put("/accounts/:id", async (req, res) => {
+      const id = req.params?.id;
+      const data = req.body;
+      console.log("id", id, data);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const addBalance = {
+        $set: {
+            group:data.group,
+            account:data.account,
+            amount:data.amount,
+            description:data.description
+        },
+      };
+      const result = await accountsCollection.updateOne(
+        filter,
+        addBalance,
+        options
+      );
+      res.send(result);
+    });
+
+      app.get("/accounts/:id", async (req, res) => {
+      try {
+        const id = req.params?.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await accountsCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
+
 
     /***Total balance***/
 
@@ -824,6 +874,15 @@ async function run() {
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
+    // Priching 
+    app.post("/price", async (req, res) => {
+      try {
+        const newPricing = req.body;
+        // console.log(newAccounts)
+        const result = await PricingCollection.insertOne(newPricing);
+        res.send(result);
+      } catch (error) { }
+    });
 
     app.post("/newsLetterSubscription", async (req, res) => {
       try {
@@ -833,7 +892,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -925,7 +984,7 @@ async function run() {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
         const query = { _id: new ObjectId(id) };
-        const result = await businessesCollection.find(query).toArray();
+        const result = await businessesCollection.findOne(query)
         res.send(result);
       } catch (error) {
         // console.log("Error On get Business id");
