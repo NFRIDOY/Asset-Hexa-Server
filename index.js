@@ -691,7 +691,7 @@ async function run() {
         console.log(newBlogs);
         const notificationData = {
           userName: newBlogs.author,
-          date: newBlogs.time,
+          date: new Date(),
           photoURL: newBlogs.authorImage,
           title: newBlogs.title,
           type: "blog",
@@ -700,7 +700,7 @@ async function run() {
         const notificationResult = await notificationCollection.insertOne(
           notificationData
         );
-		
+
 		const updateDoc = { $inc: { unseenNotification: 1 } };
 		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
 
@@ -881,7 +881,7 @@ async function run() {
         const notificationData = {
           userName: newBusiness.userName,
           company: newBusiness.CompanyName,
-          date: newBusiness.time,
+          date: new Date(),
           photoURL: newBusiness.photoURL,
           type: "business",
         };
@@ -1140,8 +1140,8 @@ async function run() {
 	// -------------------notification related api----------------------------
 
     app.get("/notifications", async (req, res) => {
-      const cursor = notificationCollection.find().sort({ date: -1 }).limit(6);
-      const result = await cursor.toArray();
+      const cursor = await notificationCollection.find().sort({ date: -1 }).toArray()
+	  const result = cursor.sort((a, b) => b.date - a.date);
       res.send(result);
     });
 
