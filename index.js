@@ -565,7 +565,7 @@ async function run() {
 
     app.delete("/accounts/:id", async (req, res) => {
       try {
-        const id = req.params.id;
+        const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
         const result = await accountsCollection.deleteOne(query);
         res.send(result);
@@ -573,6 +573,42 @@ async function run() {
         res.send(error.message);
       }
     });
+    
+    // update account 
+
+    app.put("/accounts/:id", async (req, res) => {
+      const id = req.params?.id;
+      const data = req.body;
+      console.log("id", id, data);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const addBalance = {
+        $set: {
+            group:data.group,
+            account:data.account,
+            amount:data.amount,
+            description:data.description
+        },
+      };
+      const result = await accountsCollection.updateOne(
+        filter,
+        addBalance,
+        options
+      );
+      res.send(result);
+    });
+
+      app.get("/accounts/:id", async (req, res) => {
+      try {
+        const id = req.params?.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await accountsCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
 
 
     /***Total balance***/
