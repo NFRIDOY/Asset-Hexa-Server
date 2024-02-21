@@ -77,6 +77,16 @@ async function run() {
       res.send(result);
     });
 
+
+    
+    // Get single  user 
+    
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email
+      const result = await usersCollection.findOne({ email })
+      res.send(result)
+    })
+
     app.post("/transections", async (req, res) => {
       try {
         // const id = req.params.id;
@@ -1083,25 +1093,25 @@ async function run() {
         );
 
         const newInvestmentObj = {
-          CompanyName: InvestmentObj?.CompanyName,
-          CompanyEmail: InvestmentObj?.CompanyEmail,
-          BrandImage: InvestmentObj?.BrandImage,
-          BannerImage: InvestmentObj?.BannerImage,
-          Designation: InvestmentObj?.Designation,
-          userEmail: InvestmentObj?.userEmail,
-          CompanyDescription: InvestmentObj?.CompanyDescription,
-          Minimum: InvestmentObj?.Minimum,
-          Maximum: InvestmentObj?.Maximum,
-          Profit: InvestmentObj?.Profit,
-          postTime: InvestmentObj?.time,
-          userName: InvestmentObj?.userName,
-          photoURL: InvestmentObj?.photoURL,
-          companyVarification: InvestmentObj?.companyVarification,
-          totalInvestment: InvestmentObj?.totalInvestment,
+          CompanyName: thisBusiness?.CompanyName,
+          CompanyEmail: thisBusiness?.CompanyEmail,
+          BrandImage: thisBusiness?.BrandImage,
+          BannerImage: thisBusiness?.BannerImage,
+          Designation: thisBusiness?.Designation,
+          userEmail: thisBusiness?.userEmail,
+          CompanyDescription: thisBusiness?.CompanyDescription,
+          Minimum: thisBusiness?.Minimum,
+          Maximum: thisBusiness?.Maximum,
+          Profit: thisBusiness?.Profit,
+          postTime: thisBusiness?.time,
+          userName: thisBusiness?.userName,
+          photoURL: thisBusiness?.photoURL,
+          companyVarification: thisBusiness?.companyVarification,
+          totalInvestment: totalInvestment,
+          investor: InvestmentObj?.investor,
+          investment: InvestmentObj?.invest
         };
-        const addToInvestments = await investmentsCollection.insertOne(
-          newInvestmentObj
-        );
+        const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
 
         res.send({ result, addToInvestments });
         // console.log(result)
