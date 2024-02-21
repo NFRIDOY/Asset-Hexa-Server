@@ -544,7 +544,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -560,6 +560,20 @@ async function run() {
         res.send(error.message);
       }
     });
+
+    // delete account 
+
+    app.delete("/accounts/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await accountsCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
 
     /***Total balance***/
 
@@ -814,15 +828,15 @@ async function run() {
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
-        // Priching 
-        app.post("/price", async (req, res) => {
-          try {
-            const newPricing = req.body;
-            // console.log(newAccounts)
-            const result = await PricingCollection.insertOne(newPricing);
-            res.send(result);
-          } catch (error) {}
-        });
+    // Priching 
+    app.post("/price", async (req, res) => {
+      try {
+        const newPricing = req.body;
+        // console.log(newAccounts)
+        const result = await PricingCollection.insertOne(newPricing);
+        res.send(result);
+      } catch (error) { }
+    });
 
     app.post("/newsLetterSubscription", async (req, res) => {
       try {
@@ -832,7 +846,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
