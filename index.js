@@ -51,6 +51,7 @@ async function run() {
     const investmentsCollection = database.collection("investments");
     const paymentCollection = database.collection("payments");
     const notificationCollection = database.collection("notification");
+	const  unseenNotificationPerUser = database.collection("unseenNotificationPerUser")
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -699,6 +700,10 @@ async function run() {
         const notificationResult = await notificationCollection.insertOne(
           notificationData
         );
+		
+		const updateDoc = { $inc: { unseenNotification: 1 } };
+		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+
         res.send(result);
       } catch (error) {
         res.send(error);
@@ -884,6 +889,13 @@ async function run() {
         const notification = await notificationCollection.insertOne(
           notificationData
         );
+
+		
+
+
+		const updateDoc = { $inc: { unseenNotification: 1 } };
+		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+
       } catch (error) {
         console.log("error on POST /bussiness");
       }
@@ -1125,11 +1137,47 @@ async function run() {
       res.send({ paymentResult });
     });
 
+	// -------------------notification related api----------------------------
+
     app.get("/notifications", async (req, res) => {
       const cursor = notificationCollection.find().sort({ date: -1 }).limit(6);
       const result = await cursor.toArray();
       res.send(result);
     });
+
+	app.put("/notificationsCount/:email", async (req, res) => {
+		const email = req.params.email;
+		const notifications = req.body;
+
+		console.log(email);
+		console.log(notifications);
+
+		const filter = { email: email };
+		const options = { upsert: true };
+		const updateDoc = {
+			$set: {
+				unseenNotification: notifications?.unseenNotification,
+			},
+		};
+		const result = await unseenNotificationPerUser.updateOne(
+			filter,
+			updateDoc,
+			options
+		);
+		res.send(result);
+	});
+
+	app.get("/notificationsCount/:email", async (req, res) => {
+		const email = req.params.email;
+
+		const query = { email: email };
+		const result = await unseenNotificationPerUser.findOne(query);
+
+		res.send(result);
+	});
+
+
+
 
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
