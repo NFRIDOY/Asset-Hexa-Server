@@ -99,6 +99,7 @@ async function run() {
 
         const options = { upsert: false };
 
+        // fixt from bug 
         if (typeTransec === "INCOME") {
           const filter = { account: account, email: newTransectionsEmail };
 
