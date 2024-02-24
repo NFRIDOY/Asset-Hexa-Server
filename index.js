@@ -51,6 +51,7 @@ async function run() {
     const investmentsCollection = database.collection("investments");
     const paymentCollection = database.collection("payments");
     const notificationCollection = database.collection("notification");
+	const  unseenNotificationPerUser = database.collection("unseenNotificationPerUser")
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -98,6 +99,7 @@ async function run() {
 
         const options = { upsert: false };
 
+        // fixt from bug 
         if (typeTransec === "INCOME") {
           const filter = { account: account, email: newTransectionsEmail };
 
@@ -138,47 +140,14 @@ async function run() {
             resultAccount,
           };
           return res.send(result);
-        } else if (typeTransec === "EXPENSE") {
-          const filter = { account: account };
-          // const options = { upsert: true };
+        } 
+        
+        // rean 
 
-          const queryAccount = {
-            account: account,
-            email: newTransectionsEmail,
-          };
-
-          // find the account
-          const accountfindOne = await accountsCollection.findOne(queryAccount);
-
-          let AmountOnAccount = accountfindOne?.amount;
-          AmountOnAccount = AmountOnAccount - newTransections?.amount;
-
-          const transectionsUpdateAccount = {
-            $set: {
-              // TODO: update property
-              amount: AmountOnAccount,
-            },
-          };
-
-          // insertOne into transections collection
-          const resultTransec = await transectionsCollection.insertOne(
-            newTransections
-          );
-
-          // update on account
-          const resultAccount = await accountsCollection.updateOne(
-            filter,
-            transectionsUpdateAccount,
-            options
-          );
-
-          // respose
-          const result = {
-            resultTransec,
-            resultAccount,
-          };
-          return res.send(result);
-        } else if (typeTransec === "TRANSFER") {
+        
+        
+        
+        else if (typeTransec === "TRANSFER") {
           const fiterFrom = {
             account: req.body?.from,
             email: newTransectionsEmail,
@@ -554,7 +523,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -570,6 +539,56 @@ async function run() {
         res.send(error.message);
       }
     });
+
+    // delete account 
+
+    app.delete("/accounts/:id", async (req, res) => {
+      try {
+        const id = req.params?.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await accountsCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+    
+    // update account 
+
+    app.put("/accounts/:id", async (req, res) => {
+      const id = req.params?.id;
+      const data = req.body;
+      console.log("id", id, data);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const addBalance = {
+        $set: {
+            group:data.group,
+            account:data.account,
+            amount:data.amount,
+            description:data.description
+        },
+      };
+      const result = await accountsCollection.updateOne(
+        filter,
+        addBalance,
+        options
+      );
+      res.send(result);
+    });
+
+      app.get("/accounts/:id", async (req, res) => {
+      try {
+        const id = req.params?.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await accountsCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
+
+
 
     /***Total balance***/
 
@@ -690,7 +709,7 @@ async function run() {
         console.log(newBlogs);
         const notificationData = {
           userName: newBlogs.author,
-          date: newBlogs.time,
+          date: new Date(),
           photoURL: newBlogs.authorImage,
           title: newBlogs.title,
           type: "blog",
@@ -699,6 +718,10 @@ async function run() {
         const notificationResult = await notificationCollection.insertOne(
           notificationData
         );
+
+		const updateDoc = { $inc: { unseenNotification: 1 } };
+		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+
         res.send(result);
       } catch (error) {
         res.send(error);
@@ -824,6 +847,15 @@ async function run() {
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
+    // Priching 
+    app.post("/price", async (req, res) => {
+      try {
+        const newPricing = req.body;
+        // console.log(newAccounts)
+        const result = await PricingCollection.insertOne(newPricing);
+        res.send(result);
+      } catch (error) { }
+    });
 
     app.post("/newsLetterSubscription", async (req, res) => {
       try {
@@ -833,7 +865,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) {}
+      } catch (error) { }
     });
 
     // read
@@ -876,7 +908,7 @@ async function run() {
         const notificationData = {
           userName: newBusiness.userName,
           company: newBusiness.CompanyName,
-          date: newBusiness.time,
+          date: new Date(),
           photoURL: newBusiness.photoURL,
           type: "business",
         };
@@ -884,6 +916,13 @@ async function run() {
         const notification = await notificationCollection.insertOne(
           notificationData
         );
+
+		
+
+
+		const updateDoc = { $inc: { unseenNotification: 1 } };
+		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+
       } catch (error) {
         console.log("error on POST /bussiness");
       }
@@ -925,7 +964,7 @@ async function run() {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
         const query = { _id: new ObjectId(id) };
-        const result = await businessesCollection.find(query).toArray();
+        const result = await businessesCollection.findOne(query)
         res.send(result);
       } catch (error) {
         // console.log("Error On get Business id");
@@ -1034,25 +1073,25 @@ async function run() {
         );
 
         const newInvestmentObj = {
-          CompanyName: InvestmentObj?.CompanyName,
-          CompanyEmail: InvestmentObj?.CompanyEmail,
-          BrandImage: InvestmentObj?.BrandImage,
-          BannerImage: InvestmentObj?.BannerImage,
-          Designation: InvestmentObj?.Designation,
-          userEmail: InvestmentObj?.userEmail,
-          CompanyDescription: InvestmentObj?.CompanyDescription,
-          Minimum: InvestmentObj?.Minimum,
-          Maximum: InvestmentObj?.Maximum,
-          Profit: InvestmentObj?.Profit,
-          postTime: InvestmentObj?.time,
-          userName: InvestmentObj?.userName,
-          photoURL: InvestmentObj?.photoURL,
-          companyVarification: InvestmentObj?.companyVarification,
-          totalInvestment: InvestmentObj?.totalInvestment,
+          CompanyName: thisBusiness?.CompanyName,
+          CompanyEmail: thisBusiness?.CompanyEmail,
+          BrandImage: thisBusiness?.BrandImage,
+          BannerImage: thisBusiness?.BannerImage,
+          Designation: thisBusiness?.Designation,
+          userEmail: thisBusiness?.userEmail,
+          CompanyDescription: thisBusiness?.CompanyDescription,
+          Minimum: thisBusiness?.Minimum,
+          Maximum: thisBusiness?.Maximum,
+          Profit: thisBusiness?.Profit,
+          postTime: thisBusiness?.time,
+          userName: thisBusiness?.userName,
+          photoURL: thisBusiness?.photoURL,
+          companyVarification: thisBusiness?.companyVarification,
+          totalInvestment: totalInvestment,
+          investor: InvestmentObj?.investor,
+          investment: InvestmentObj?.invest
         };
-        const addToInvestments = await investmentsCollection.insertOne(
-          newInvestmentObj
-        );
+        const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
 
         res.send({ result, addToInvestments });
         // console.log(result)
@@ -1125,11 +1164,47 @@ async function run() {
       res.send({ paymentResult });
     });
 
+	// -------------------notification related api----------------------------
+
     app.get("/notifications", async (req, res) => {
-      const cursor = notificationCollection.find().sort({ date: -1 }).limit(6);
-      const result = await cursor.toArray();
+      const cursor = await notificationCollection.find().sort({ date: -1 }).toArray()
+	  const result = cursor.sort((a, b) => b.date - a.date);
       res.send(result);
     });
+
+	app.put("/notificationsCount/:email", async (req, res) => {
+		const email = req.params.email;
+		const notifications = req.body;
+
+		console.log(email);
+		console.log(notifications);
+
+		const filter = { email: email };
+		const options = { upsert: true };
+		const updateDoc = {
+			$set: {
+				unseenNotification: notifications?.unseenNotification,
+			},
+		};
+		const result = await unseenNotificationPerUser.updateOne(
+			filter,
+			updateDoc,
+			options
+		);
+		res.send(result);
+	});
+
+	app.get("/notificationsCount/:email", async (req, res) => {
+		const email = req.params.email;
+
+		const query = { email: email };
+		const result = await unseenNotificationPerUser.findOne(query);
+
+		res.send(result);
+	});
+
+
+
 
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
