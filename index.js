@@ -144,7 +144,47 @@ async function run() {
         
         // rean 
 
-        
+        else if (typeTransec === "EXPENSE") {
+          const filter = { account: account };
+          // const options = { upsert: true };
+
+          const queryAccount = {
+            account: account,
+            email: newTransectionsEmail,
+          };
+
+          // find the account
+          const accountfindOne = await accountsCollection.findOne(queryAccount);
+
+          let AmountOnAccount = accountfindOne?.amount;
+          AmountOnAccount = AmountOnAccount - newTransections?.amount;
+
+          const transectionsUpdateAccount = {
+            $set: {
+              // TODO: update property
+              amount: AmountOnAccount,
+            },
+          };
+
+          // insertOne into transections collection
+          const resultTransec = await transectionsCollection.insertOne(
+            newTransections
+          );
+
+          // update on account
+          const resultAccount = await accountsCollection.updateOne(
+            filter,
+            transectionsUpdateAccount,
+            options
+          );
+
+          // respose
+          const result = {
+            resultTransec,
+            resultAccount,
+          };
+          return res.send(result);
+        }
         
         
         else if (typeTransec === "TRANSFER") {
