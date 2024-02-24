@@ -140,7 +140,11 @@ async function run() {
             resultAccount,
           };
           return res.send(result);
-        } else if (typeTransec === "EXPENSE") {
+        } 
+        
+        // rean 
+
+        else if (typeTransec === "EXPENSE") {
           const filter = { account: account };
           // const options = { upsert: true };
 
@@ -180,7 +184,10 @@ async function run() {
             resultAccount,
           };
           return res.send(result);
-        } else if (typeTransec === "TRANSFER") {
+        }
+        
+        
+        else if (typeTransec === "TRANSFER") {
           const fiterFrom = {
             account: req.body?.from,
             email: newTransectionsEmail,
