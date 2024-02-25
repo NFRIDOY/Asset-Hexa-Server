@@ -977,8 +977,8 @@ async function run() {
     // GET ~~~~~~~~~~~Business
     app.get("/bussiness", async (req, res) => {
       try {
-        const queryEmail = req.query.email;
-        const filter = { email: queryEmail };
+        const queryEmail = req?.query?.email;
+        const filter = { userEmail: queryEmail };
         let result;
         if (queryEmail) {
           result = await businessesCollection.find(filter).toArray();
