@@ -51,7 +51,9 @@ async function run() {
     const investmentsCollection = database.collection("investments");
     const paymentCollection = database.collection("payments");
     const notificationCollection = database.collection("notification");
-	const  unseenNotificationPerUser = database.collection("unseenNotificationPerUser")
+    const unseenNotificationPerUser = database.collection(
+      "unseenNotificationPerUser"
+    );
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -78,15 +80,13 @@ async function run() {
       res.send(result);
     });
 
+    // Get single  user
 
-    
-    // Get single  user 
-    
-    app.get('/user/:email', async (req, res) => {
-      const email = req.params.email
-      const result = await usersCollection.findOne({ email })
-      res.send(result)
-    })
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
 
     app.post("/transections", async (req, res) => {
       try {
@@ -99,7 +99,7 @@ async function run() {
 
         const options = { upsert: false };
 
-        // fixt from bug 
+        // fixt from bug
         if (typeTransec === "INCOME") {
           const filter = { account: account, email: newTransectionsEmail };
 
@@ -140,10 +140,9 @@ async function run() {
             resultAccount,
           };
           return res.send(result);
-        } 
-        
-        // rean 
+        }
 
+        // rean
         else if (typeTransec === "EXPENSE") {
           const filter = { account: account };
           // const options = { upsert: true };
@@ -184,10 +183,7 @@ async function run() {
             resultAccount,
           };
           return res.send(result);
-        }
-        
-        
-        else if (typeTransec === "TRANSFER") {
+        } else if (typeTransec === "TRANSFER") {
           const fiterFrom = {
             account: req.body?.from,
             email: newTransectionsEmail,
@@ -563,7 +559,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -580,7 +576,7 @@ async function run() {
       }
     });
 
-    // delete account 
+    // delete account
 
     app.delete("/accounts/:id", async (req, res) => {
       try {
@@ -592,8 +588,8 @@ async function run() {
         res.send(error.message);
       }
     });
-    
-    // update account 
+
+    // update account
 
     app.put("/accounts/:id", async (req, res) => {
       const id = req.params?.id;
@@ -603,10 +599,10 @@ async function run() {
       const options = { upsert: true };
       const addBalance = {
         $set: {
-            group:data.group,
-            account:data.account,
-            amount:data.amount,
-            description:data.description
+          group: data.group,
+          account: data.account,
+          amount: data.amount,
+          description: data.description,
         },
       };
       const result = await accountsCollection.updateOne(
@@ -617,7 +613,7 @@ async function run() {
       res.send(result);
     });
 
-      app.get("/accounts/:id", async (req, res) => {
+    app.get("/accounts/:id", async (req, res) => {
       try {
         const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
@@ -627,8 +623,6 @@ async function run() {
         res.send(error.message);
       }
     });
-
-
 
     /***Total balance***/
 
@@ -759,8 +753,11 @@ async function run() {
           notificationData
         );
 
-		const updateDoc = { $inc: { unseenNotification: 1 } };
-		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+        const updateDoc = { $inc: { unseenNotification: 1 } };
+        const updateResult = await unseenNotificationPerUser.updateMany(
+          {},
+          updateDoc
+        );
 
         res.send(result);
       } catch (error) {
@@ -838,6 +835,31 @@ async function run() {
       // console.log(result);
     });
 
+    //Delete Comment
+    app.patch("/blog/deleteComment/:id", async (req, res) => {
+      try {
+        const id = req?.params?.id;
+        const email = req?.query?.email;
+        const commentId = req?.query?.commentID;
+
+        const result = await blogCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $pull: {
+              comments: {
+                commenterEmail: email,
+                commentId: parseInt(commentId),
+              },
+            },
+          }
+        );
+
+        return res.send(result);
+      } catch (err) {
+        return res.send({ message: err.message });
+      }
+    });
+
     // delete like or dislike
     // http://localhost:5000/blog/deleteLD/65c245ffd4be3bbc893bd93a?email=ariful2634@gmail.com&queryArray=dislike
     app.delete("/blog/deleteLD/:id", async (req, res) => {
@@ -859,6 +881,13 @@ async function run() {
           );
           return res.send(result);
         }
+        // else {
+        //   const result = await blogCollection.updateOne(
+        //     { _id: new ObjectId(id) },
+        //     { $pull: { comments: { commenterEmail: email, text: comment } } }
+        //   );
+        //   return res.send(result);
+        // }
       } catch (error) {
         res.send({ error: error.message });
       }
@@ -887,14 +916,14 @@ async function run() {
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
-    // Priching 
+    // Priching
     app.post("/price", async (req, res) => {
       try {
         const newPricing = req.body;
         // console.log(newAccounts)
         const result = await PricingCollection.insertOne(newPricing);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     app.post("/newsLetterSubscription", async (req, res) => {
@@ -905,7 +934,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -957,12 +986,11 @@ async function run() {
           notificationData
         );
 
-		
-
-
-		const updateDoc = { $inc: { unseenNotification: 1 } };
-		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
-
+        const updateDoc = { $inc: { unseenNotification: 1 } };
+        const updateResult = await unseenNotificationPerUser.updateMany(
+          {},
+          updateDoc
+        );
       } catch (error) {
         console.log("error on POST /bussiness");
       }
@@ -1004,7 +1032,7 @@ async function run() {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
         const query = { _id: new ObjectId(id) };
-        const result = await businessesCollection.findOne(query)
+        const result = await businessesCollection.findOne(query);
         res.send(result);
       } catch (error) {
         // console.log("Error On get Business id");
@@ -1129,9 +1157,11 @@ async function run() {
           companyVarification: thisBusiness?.companyVarification,
           totalInvestment: totalInvestment,
           investor: InvestmentObj?.investor,
-          investment: InvestmentObj?.invest
+          investment: InvestmentObj?.invest,
         };
-        const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
+        const addToInvestments = await investmentsCollection.insertOne(
+          newInvestmentObj
+        );
 
         res.send({ result, addToInvestments });
         // console.log(result)
@@ -1204,47 +1234,47 @@ async function run() {
       res.send({ paymentResult });
     });
 
-	// -------------------notification related api----------------------------
+    // -------------------notification related api----------------------------
 
     app.get("/notifications", async (req, res) => {
-      const cursor = await notificationCollection.find().sort({ date: -1 }).toArray()
-	  const result = cursor.sort((a, b) => b.date - a.date);
+      const cursor = await notificationCollection
+        .find()
+        .sort({ date: -1 })
+        .toArray();
+      const result = cursor.sort((a, b) => b.date - a.date);
       res.send(result);
     });
 
-	app.put("/notificationsCount/:email", async (req, res) => {
-		const email = req.params.email;
-		const notifications = req.body;
+    app.put("/notificationsCount/:email", async (req, res) => {
+      const email = req.params.email;
+      const notifications = req.body;
 
-		console.log(email);
-		console.log(notifications);
+      console.log(email);
+      console.log(notifications);
 
-		const filter = { email: email };
-		const options = { upsert: true };
-		const updateDoc = {
-			$set: {
-				unseenNotification: notifications?.unseenNotification,
-			},
-		};
-		const result = await unseenNotificationPerUser.updateOne(
-			filter,
-			updateDoc,
-			options
-		);
-		res.send(result);
-	});
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          unseenNotification: notifications?.unseenNotification,
+        },
+      };
+      const result = await unseenNotificationPerUser.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
 
-	app.get("/notificationsCount/:email", async (req, res) => {
-		const email = req.params.email;
+    app.get("/notificationsCount/:email", async (req, res) => {
+      const email = req.params.email;
 
-		const query = { email: email };
-		const result = await unseenNotificationPerUser.findOne(query);
+      const query = { email: email };
+      const result = await unseenNotificationPerUser.findOne(query);
 
-		res.send(result);
-	});
-
-
-
+      res.send(result);
+    });
 
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
