@@ -80,11 +80,43 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get("/users/:id", async (req, res) => {
+      // console.log(req.query);
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+
+  
+
     // Get single  user
 
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
+
+
+    app.put("/users/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      // console.log(data);
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          displayName:data.displayName,
+        
+          photoURL: data.photoURL,
+          
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, option);
       res.send(result);
     });
 
