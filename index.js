@@ -826,6 +826,26 @@ async function run() {
       res.send(result);
     });
 
+
+    app.put("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      // console.log(data);
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          title:data.title,
+          description: data.description,
+          image: data.image,
+          
+        },
+      };
+      const result = await blogCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
+
     app.get("/blog/:email", async (req, res) => {
       // console.log(req.query);
       const email = req.params?.email;
