@@ -176,7 +176,7 @@ async function run() {
 
         // rean
         else if (typeTransec === "EXPENSE") {
-          const filter = { account: account };
+          const filter = { account: account, email: newTransectionsEmail};
           // const options = { upsert: true };
 
           const queryAccount = {
