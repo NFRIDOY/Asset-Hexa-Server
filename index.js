@@ -1390,16 +1390,13 @@ async function run() {
 
 		app.post("/budget", async (req, res) => {
 			const budget = req.body;
-			console.log(budget);
-			const result = await budgetCollection.insertOne(budget);
+			
 			res.send(result);
 		});
 
 		app.get("/budget/:email", async (req, res) => {
 			const email = { email: req.params.email };
-			console.log(email);
-
-			const result = await budgetCollection.find(email).toArray();
+			
 
 			res.send(result);
 		});
@@ -1412,7 +1409,7 @@ async function run() {
 					return res.send({ error: "id not found" });
 				}
 				const updateBudget = req.body;
-				console.log(id, updateBudget);
+				
 
 				const filter = { _id: new ObjectId(id) };
 				const options = { upsert: true };
@@ -1438,7 +1435,7 @@ async function run() {
 
 
 		app.delete("/budget", async (req, res) => {
-		console.log("hello delete");
+		
 
 			const result = await budgetCollection.deleteMany();
 			res.send(result);
@@ -1483,7 +1480,6 @@ async function run() {
 					.find(BudgetFilter)
 					.toArray();
 
-				console.log(totalExpanse);
 				const totalExpanseAmount = totalExpanse.reduce((accumulator, transaction) => {
 				  return accumulator + transaction.amount;
 				}, 0);
