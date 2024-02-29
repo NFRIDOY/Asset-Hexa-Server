@@ -326,6 +326,7 @@ async function run() {
 				res.status(500).json({ message: error.message });
 			}
 		});
+
 		app.get("/transections", async (req, res) => {
 			try {
 				const transQuery = req.query.type;
@@ -1434,6 +1435,16 @@ async function run() {
 			}
 		});
 
+
+
+		app.delete("/budget", async (req, res) => {
+		console.log("hello delete");
+
+			const result = await budgetCollection.deleteMany();
+			res.send(result);
+
+		});
+
 		app.delete("/budget/:id", async (req, res) => {
 			const id = req.params.id;
 
@@ -1494,6 +1505,8 @@ async function run() {
 				res.status(500).json({ error: "Internal Server Error" });
 			}
 		});
+
+
 
 		await client.db("admin").command({ ping: 1 });
 		console.log(
