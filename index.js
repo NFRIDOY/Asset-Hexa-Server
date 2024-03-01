@@ -618,7 +618,6 @@ async function run() {
     });
 
     // delete account
-
     app.delete("/accounts/:id", async (req, res) => {
       try {
         const id = req.params?.id;
@@ -631,7 +630,6 @@ async function run() {
     });
 
     // update account
-
     app.put("/accounts/:id", async (req, res) => {
       const id = req.params?.id;
       const data = req.body;
@@ -1338,6 +1336,130 @@ async function run() {
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
       res.send(result);
+    });
+
+    //***********************************Budget Related API ******************************************/
+    app.post("/budget", async (req, res) => {
+      const budget = req.body;
+      console.log(budget);
+      const result = await budgetCollection.insertOne(budget);
+      res.send(result);
+    });
+
+    app.get("/budget/:email", async (req, res) => {
+      const email = { email: req.params.email };
+      console.log(email);
+
+      const result = await budgetCollection.find(email).toArray();
+
+      res.send(result);
+    });
+
+    app.put("/budget/:id", async (req, res) => {
+      try {
+        const id = req?.params?.id;
+
+        if (id == "undefined") {
+          return res.send({ error: "id not found" });
+        }
+        const updateBudget = req.body;
+        console.log(id, updateBudget);
+
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            budgetAmount: updateBudget.budgetAmount,
+            budgetName: updateBudget.budgetName,
+            date: updateBudget.date,
+          },
+        };
+        const result = await budgetCollection.updateOne(
+          filter,
+          updateDoc,
+          options
+        );
+        res.send(result);
+      } catch (error) {
+        console.error("Error updating budget:", error);
+        res.status(500).send({ error: "Internal Server Error" });
+      }
+    });
+
+    app.delete("/budget/:id", async (req, res) => {
+      const id = req.params.id;
+
+      if (id == "undefined") {
+        return res.send({ error: "id not found" });
+      }
+
+      const query = { _id: new ObjectId(id) };
+      const result = await budgetCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/ExpanseThisMonth/:email", async (req, res) => {
+      try {
+        const userEmail = req.params.email;
+
+        // please don't delete these comment
+
+        // const currentDate = new Date();
+        // const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() , 2);
+        // const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+        // const date = new Date();
+        // const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        // const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+
+        const firstDayOfMonth = "2024-03-01T00:00:00.000Z";
+        const lastDayOfMonth = "2024-03-31T00:00:00.000Z";
+
+        // console.log(firstDayOfMonth ,"first date");
+        // console.log(lastDayOfMonth ,"last date");
+
+        const filter = {
+          email: userEmail,
+          date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+          // date: { $gte: firstDayOfMonth }
+          // date: { $gte: "2024-03-01T00:00:00.000Z" }
+          // date: "2024-02-01T13:15:00.000Z"
+        };
+
+        const BudgetFilter = {
+          email: userEmail,
+        };
+
+        const totalExpanse = await transectionsCollection
+          .find(filter)
+          .toArray();
+        const totalBudget = await budgetCollection.find(BudgetFilter).toArray();
+
+        const totalExpanseAmount = totalExpanse.reduce(
+          (accumulator, transaction) => {
+            return accumulator + transaction.amount;
+          },
+          0
+        );
+        const totalBudgetAmount = totalBudget.reduce(
+          (accumulator, transaction) => {
+            return accumulator + parseInt(transaction.budgetAmount);
+          },
+          0
+        );
+
+        console.log("totalbudget", totalBudget);
+
+        const obj = {
+          totalExpenseInThisMonth: totalExpanseAmount,
+          totalBudgetInThisMonth: totalBudgetAmount,
+        };
+
+        res.send(obj);
+      } catch (error) {
+        console.error("Error fetching expense data for this month:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
     });
 
     await client.db("admin").command({ ping: 1 });
