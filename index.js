@@ -606,7 +606,7 @@ async function run() {
 
     // read
 
-    app.get("/accounts", verifyToken, async (req, res) => {
+    app.get("/accounts", async (req, res) => {
       try {
         const emailQuery = req.query.email;
         const query = { email: emailQuery };
