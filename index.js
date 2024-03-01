@@ -58,6 +58,7 @@ async function run() {
     const unseenNotificationPerUser = database.collection(
       "unseenNotificationPerUser"
     );
+    const budgetCollection = database.collection("budget");
 
     /************************ JSON WEB TOKEN (JWT) ********************************/
     app.post("/api/v1/jwt", async (req, res) => {
