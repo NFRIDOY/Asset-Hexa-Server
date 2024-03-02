@@ -15,14 +15,14 @@ app.use(express.json());
 app.use(cookieParser());
 // app.use(cors())
 app.use(
-  cors({
-    origin: [
-      "https://asset-hexa.web.app",
-      "http://localhost:5173",
-      "http://localhost:5174",
-    ],
-    credentials: true,
-  })
+	cors({
+		origin: [
+			"https://asset-hexa.web.app",
+			"http://localhost:5173",
+			"http://localhost:5174",
+		],
+		credentials: true,
+	})
 );
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -31,11 +31,11 @@ const uri = process.env.URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
+	serverApi: {
+		version: ServerApiVersion.v1,
+		strict: true,
+		deprecationErrors: true,
+	},
 });
 
 async function run() {
@@ -1399,69 +1399,61 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/ExpanseThisMonth/:email", async (req, res) => {
-      try {
-        const userEmail = req.params.email;
+    app.delete("/budget", async (req, res) => {
+		
 
-        // please don't delete these comment
+		const result = await budgetCollection.deleteMany();
+		res.send(result);
 
-        // const currentDate = new Date();
-        // const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() , 2);
-        // const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+	});
 
-        // const date = new Date();
-        // const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-        // const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+	app.get("/ExpanseThisMonth/:email", async (req, res) => {
+		try {
+			const userEmail = req.params.email;
+			const date = new Date();
+			const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+			const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-        const firstDayOfMonth = "2024-03-01T00:00:00.000Z";
-        const lastDayOfMonth = "2024-03-31T00:00:00.000Z";
+			const firstDateString = firstDayOfMonth.toISOString();
+			const secondeDateString = lastDayOfMonth.toISOString();
 
-        // console.log(firstDayOfMonth ,"first date");
-        // console.log(lastDayOfMonth ,"last date");
+			const filter = {
+				email: userEmail,
+				date: { $gte: firstDateString, $lte: secondeDateString },
+			};
 
-        const filter = {
-          email: userEmail,
-          date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-          // date: { $gte: firstDayOfMonth }
-          // date: { $gte: "2024-03-01T00:00:00.000Z" }
-          // date: "2024-02-01T13:15:00.000Z"
-        };
+			const BudgetFilter = {
+				email: userEmail,
+			};
 
-        const BudgetFilter = {
-          email: userEmail,
-        };
+			const totalExpanse = await transectionsCollection
+				.find(filter)
+				.toArray();
+			const totalBudget = await budgetCollection
+				.find(BudgetFilter)
+				.toArray();
 
-        const totalExpanse = await transectionsCollection
-          .find(filter)
-          .toArray();
-        const totalBudget = await budgetCollection.find(BudgetFilter).toArray();
+			const totalExpanseAmount = totalExpanse.reduce((accumulator, transaction) => {
+			  return accumulator + transaction.amount;
+			}, 0);
+			const totalBudgetAmount = totalBudget.reduce((accumulator, transaction) => {
+			  return accumulator + parseInt(transaction.budgetAmount);
+			}, 0);
 
-        const totalExpanseAmount = totalExpanse.reduce(
-          (accumulator, transaction) => {
-            return accumulator + transaction.amount;
-          },
-          0
-        );
-        const totalBudgetAmount = totalBudget.reduce(
-          (accumulator, transaction) => {
-            return accumulator + parseInt(transaction.budgetAmount);
-          },
-          0
-        );
+			const obj = {
+			  totalExpenseInThisMonth : totalExpanseAmount,
+			  totalBudgetInThisMonth : totalBudgetAmount
+			}
 
-        console.log("totalbudget", totalBudget);
-
-        const obj = {
-          totalExpenseInThisMonth: totalExpanseAmount,
-          totalBudgetInThisMonth: totalBudgetAmount,
-        };
-
-        res.send(obj);
-      } catch (error) {
-        console.error("Error fetching expense data for this month:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
-    });
+			res.send(obj);
+		} catch (error) {
+			console.error(
+				"Error fetching expense data for this month:",
+				error
+			);
+			res.status(500).json({ error: "Internal Server Error" });
+		}
+	});
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -1475,9 +1467,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Asset Hexa Server is Running.");
+	res.send("Asset Hexa Server is Running.");
 });
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}!`);
+	console.log(`Server listening on port ${port}!`);
 });
