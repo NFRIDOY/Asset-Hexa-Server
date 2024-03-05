@@ -808,8 +808,17 @@ async function run() {
     // GET
     app.get("/blogs", async (req, res) => {
       try {
-        const result = await blogCollection.find().sort({ time: -1 }).toArray();
+        const page = parseInt(req?.query?.page);
+        const size = parseInt(req?.query?.size);
+        console.log('pagination quary', page, size);
+        const result = await blogCollection.find()
+          // .sort({ time: -1 })
+          .skip(page * size)
+          .limit(size)
+          .toArray();
         res.send(result);
+
+
       } catch (error) {
         res.send(error.message);
       }
@@ -823,6 +832,26 @@ async function run() {
       const result = await blogCollection.findOne(query);
       res.send(result);
     });
+
+    // pagination blog
+    // app.get('/data', async (req, res) => {
+    //   const page = parseInt(req.query.page);
+    //   const size = parseInt(req.query.size);
+    //   console.log('pagination quary', page, size);
+    //   const result = await blogCollection.find()
+    //     .skip(page * size)
+    //     .limit(size)
+    //     .toArray();
+    //   res.send(result);
+    // })
+
+
+    app.get("/blogsCount", async (req, res) => {
+      const count = await blogCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
+
 
     //* patch Like or Dislike or Comment  data *//
     app.patch("/blogs/:id", async (req, res) => {
@@ -1068,21 +1097,79 @@ async function run() {
 
     // Demo: /bussiness?email=income@gmail.com
     // GET ~~~~~~~~~~~Business
-    app.get("/bussiness", async (req, res) => {
+    // pagination 
+
+    // app.get("/bussiness", async (req, res) => {
+    //   try {
+    //     const queryEmail = req.query.email;
+    //     const filter = { email: queryEmail };
+    //     let result;
+    //     if (queryEmail) {
+    //       result = await businessesCollection.find(filter).toArray();
+    //     } else {
+    //       result = await businessesCollection.find().toArray();
+    //     }
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+ 
+ 
+    app.get("/business", async (req, res) => {
       try {
         const queryEmail = req?.query?.email;
         const filter = { userEmail: queryEmail };
         let result;
+    
         if (queryEmail) {
           result = await businessesCollection.find(filter).toArray();
         } else {
           result = await businessesCollection.find().toArray();
         }
-        res.send(result);
+    
+        const page = parseInt(req?.query?.page) || 1;
+        const size = parseInt(req?.query?.size) || 10;
+    
+        console.log('pagination query', page, size);
+    
+        const paginatedResult = await businessesCollection.find(filter)
+          .skip((page - 1) * size)
+          .limit(size)
+          .toArray();
+    
+        res.send(paginatedResult);
       } catch (error) {
         res.send(error.message);
       }
     });
+
+    
+
+    // app.get("/blogs", async (req, res) => {
+    //   try {
+    //     const page = parseInt(req?.query?.page);
+    //     const size = parseInt(req?.query?.size);
+    //     console.log('pagination quary', page, size);
+    //     const result = await blogCollection.find()
+    //       // .sort({ time: -1 })
+    //       .skip(page * size)
+    //       .limit(size)
+    //       .toArray();
+    //     res.send(result);
+
+
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+
+    app.get("/bussinessCount", async (req, res) => {
+      const count = await businessesCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
+
 
     // GET by is [dynamic ~~~~~~~~~~~Business]
     app.get("/bussiness/:id", async (req, res) => {
