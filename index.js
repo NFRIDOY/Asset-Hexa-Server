@@ -51,7 +51,7 @@ async function run() {
     const investmentsCollection = database.collection("investments");
     const paymentCollection = database.collection("payments");
     const notificationCollection = database.collection("notification");
-	const  unseenNotificationPerUser = database.collection("unseenNotificationPerUser")
+    const unseenNotificationPerUser = database.collection("unseenNotificationPerUser")
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -79,9 +79,9 @@ async function run() {
     });
 
 
-    
+
     // Get single  user 
-    
+
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
       const result = await usersCollection.findOne({ email })
@@ -585,7 +585,7 @@ async function run() {
         res.send(error.message);
       }
     });
-    
+
     // update account 
 
     app.put("/accounts/:id", async (req, res) => {
@@ -596,10 +596,10 @@ async function run() {
       const options = { upsert: true };
       const addBalance = {
         $set: {
-            group:data.group,
-            account:data.account,
-            amount:data.amount,
-            description:data.description
+          group: data.group,
+          account: data.account,
+          amount: data.amount,
+          description: data.description
         },
       };
       const result = await accountsCollection.updateOne(
@@ -610,7 +610,7 @@ async function run() {
       res.send(result);
     });
 
-      app.get("/accounts/:id", async (req, res) => {
+    app.get("/accounts/:id", async (req, res) => {
       try {
         const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
@@ -752,8 +752,8 @@ async function run() {
           notificationData
         );
 
-		const updateDoc = { $inc: { unseenNotification: 1 } };
-		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+        const updateDoc = { $inc: { unseenNotification: 1 } };
+        const updateResult = await unseenNotificationPerUser.updateMany({}, updateDoc);
 
         res.send(result);
       } catch (error) {
@@ -764,8 +764,17 @@ async function run() {
     // GET
     app.get("/blogs", async (req, res) => {
       try {
-        const result = await blogCollection.find().sort({ time: -1 }).toArray();
+        const page = parseInt(req?.query?.page);
+        const size = parseInt(req?.query?.size);
+        console.log('pagination quary', page, size);
+        const result = await blogCollection.find()
+          // .sort({ time: -1 })
+          .skip(page * size)
+          .limit(size)
+          .toArray();
         res.send(result);
+
+
       } catch (error) {
         res.send(error.message);
       }
@@ -779,6 +788,26 @@ async function run() {
       const result = await blogCollection.findOne(query);
       res.send(result);
     });
+
+    // pagination blog
+    // app.get('/data', async (req, res) => {
+    //   const page = parseInt(req.query.page);
+    //   const size = parseInt(req.query.size);
+    //   console.log('pagination quary', page, size);
+    //   const result = await blogCollection.find()
+    //     .skip(page * size)
+    //     .limit(size)
+    //     .toArray();
+    //   res.send(result);
+    // })
+
+
+    app.get("/blogsCount", async (req, res) => {
+      const count = await blogCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
+
 
     //* patch Like or Dislike or Comment  data *//
     app.patch("/blogs/:id", async (req, res) => {
@@ -950,11 +979,11 @@ async function run() {
           notificationData
         );
 
-		
 
 
-		const updateDoc = { $inc: { unseenNotification: 1 } };
-		const updateResult = await unseenNotificationPerUser.updateMany({},updateDoc);
+
+        const updateDoc = { $inc: { unseenNotification: 1 } };
+        const updateResult = await unseenNotificationPerUser.updateMany({}, updateDoc);
 
       } catch (error) {
         console.log("error on POST /bussiness");
@@ -975,21 +1004,80 @@ async function run() {
 
     // Demo: /bussiness?email=income@gmail.com
     // GET ~~~~~~~~~~~Business
-    app.get("/bussiness", async (req, res) => {
+    // pagination 
+
+    // app.get("/bussiness", async (req, res) => {
+    //   try {
+    //     const queryEmail = req.query.email;
+    //     const filter = { email: queryEmail };
+    //     let result;
+    //     if (queryEmail) {
+    //       result = await businessesCollection.find(filter).toArray();
+    //     } else {
+    //       result = await businessesCollection.find().toArray();
+    //     }
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+ 
+ 
+    app.get("/business", async (req, res) => {
       try {
         const queryEmail = req.query.email;
-        const filter = { email: queryEmail };
+        const filter = queryEmail ? { email: queryEmail } : {};
+    
         let result;
+    
         if (queryEmail) {
           result = await businessesCollection.find(filter).toArray();
         } else {
           result = await businessesCollection.find().toArray();
         }
-        res.send(result);
+    
+        const page = parseInt(req?.query?.page) || 1;
+        const size = parseInt(req?.query?.size) || 10;
+    
+        console.log('pagination query', page, size);
+    
+        const paginatedResult = await businessesCollection.find(filter)
+          .skip((page - 1) * size)
+          .limit(size)
+          .toArray();
+    
+        res.send(paginatedResult);
       } catch (error) {
         res.send(error.message);
       }
     });
+
+    
+
+    // app.get("/blogs", async (req, res) => {
+    //   try {
+    //     const page = parseInt(req?.query?.page);
+    //     const size = parseInt(req?.query?.size);
+    //     console.log('pagination quary', page, size);
+    //     const result = await blogCollection.find()
+    //       // .sort({ time: -1 })
+    //       .skip(page * size)
+    //       .limit(size)
+    //       .toArray();
+    //     res.send(result);
+
+
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+
+    app.get("/bussinessCount", async (req, res) => {
+      const count = await businessesCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
+
 
     // GET by is [dynamic ~~~~~~~~~~~Business]
     app.get("/bussiness/:id", async (req, res) => {
@@ -1197,44 +1285,44 @@ async function run() {
       res.send({ paymentResult });
     });
 
-	// -------------------notification related api----------------------------
+    // -------------------notification related api----------------------------
 
     app.get("/notifications", async (req, res) => {
       const cursor = await notificationCollection.find().sort({ date: -1 }).toArray()
-	  const result = cursor.sort((a, b) => b.date - a.date);
+      const result = cursor.sort((a, b) => b.date - a.date);
       res.send(result);
     });
 
-	app.put("/notificationsCount/:email", async (req, res) => {
-		const email = req.params.email;
-		const notifications = req.body;
+    app.put("/notificationsCount/:email", async (req, res) => {
+      const email = req.params.email;
+      const notifications = req.body;
 
-		console.log(email);
-		console.log(notifications);
+      console.log(email);
+      console.log(notifications);
 
-		const filter = { email: email };
-		const options = { upsert: true };
-		const updateDoc = {
-			$set: {
-				unseenNotification: notifications?.unseenNotification,
-			},
-		};
-		const result = await unseenNotificationPerUser.updateOne(
-			filter,
-			updateDoc,
-			options
-		);
-		res.send(result);
-	});
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          unseenNotification: notifications?.unseenNotification,
+        },
+      };
+      const result = await unseenNotificationPerUser.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
 
-	app.get("/notificationsCount/:email", async (req, res) => {
-		const email = req.params.email;
+    app.get("/notificationsCount/:email", async (req, res) => {
+      const email = req.params.email;
 
-		const query = { email: email };
-		const result = await unseenNotificationPerUser.findOne(query);
+      const query = { email: email };
+      const result = await unseenNotificationPerUser.findOne(query);
 
-		res.send(result);
-	});
+      res.send(result);
+    });
 
 
 
