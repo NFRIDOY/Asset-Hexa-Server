@@ -2,23 +2,27 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const app = express();
 const port = process.env.PORT || 5000;
 const { getIncomeExpenseChartData } = require("./utils/chatData");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const { verifyToken, verifyAdmin } = require("./utils/jwt");
 
 // req
 app.use(express.json());
+app.use(cookieParser());
 // app.use(cors())
 app.use(
-  cors({
-    origin: [
-      "https://asset-hexa.web.app",
-      "http://localhost:5173",
-      "http://localhost:5174",
-    ],
-    credentials: true,
-  })
+	cors({
+		origin: [
+			"https://asset-hexa.web.app",
+			"http://localhost:5173",
+			"http://localhost:5174",
+		],
+		credentials: true,
+	})
 );
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -27,11 +31,11 @@ const uri = process.env.URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
+	serverApi: {
+		version: ServerApiVersion.v1,
+		strict: true,
+		deprecationErrors: true,
+	},
 });
 
 async function run() {
@@ -51,7 +55,21 @@ async function run() {
     const investmentsCollection = database.collection("investments");
     const paymentCollection = database.collection("payments");
     const notificationCollection = database.collection("notification");
-    const unseenNotificationPerUser = database.collection("unseenNotificationPerUser")
+    const unseenNotificationPerUser = database.collection(
+      "unseenNotificationPerUser"
+    );
+    const budgetCollection = database.collection("budget");
+
+    /************************ JSON WEB TOKEN (JWT) ********************************/
+    app.post("/api/v1/jwt", async (req, res) => {
+      const user = req?.body;
+      // console.log(user);
+      if (!user) return res.status(404).json({ message: "user not found!" });
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "365d",
+      });
+      res.send({ token });
+    });
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -78,15 +96,39 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users/:id", async (req, res) => {
+      // console.log(req.query);
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
 
+    // Get single  user
 
-    // Get single  user 
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
 
-    app.get('/user/:email', async (req, res) => {
-      const email = req.params.email
-      const result = await usersCollection.findOne({ email })
-      res.send(result)
-    })
+    app.put("/users/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      // console.log(data);
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          displayName: data.displayName,
+
+          photoURL: data.photoURL,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
 
     app.post("/transections", async (req, res) => {
       try {
@@ -99,7 +141,7 @@ async function run() {
 
         const options = { upsert: false };
 
-        // fixt from bug 
+        // fixt from bug
         if (typeTransec === "INCOME") {
           const filter = { account: account, email: newTransectionsEmail };
 
@@ -140,8 +182,11 @@ async function run() {
             resultAccount,
           };
           return res.send(result);
-        } else if (typeTransec === "EXPENSE") {
-          const filter = { account: account };
+        }
+
+        // rean
+        else if (typeTransec === "EXPENSE") {
+          const filter = { account: account, email: newTransectionsEmail };
           // const options = { upsert: true };
 
           const queryAccount = {
@@ -556,7 +601,7 @@ async function run() {
         // console.log(newAccounts)
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -573,8 +618,7 @@ async function run() {
       }
     });
 
-    // delete account 
-
+    // delete account
     app.delete("/accounts/:id", async (req, res) => {
       try {
         const id = req.params?.id;
@@ -586,8 +630,7 @@ async function run() {
       }
     });
 
-    // update account 
-
+    // update account
     app.put("/accounts/:id", async (req, res) => {
       const id = req.params?.id;
       const data = req.body;
@@ -599,7 +642,7 @@ async function run() {
           group: data.group,
           account: data.account,
           amount: data.amount,
-          description: data.description
+          description: data.description,
         },
       };
       const result = await accountsCollection.updateOne(
@@ -620,8 +663,6 @@ async function run() {
         res.send(error.message);
       }
     });
-
-
 
     /***Total balance***/
 
@@ -734,12 +775,12 @@ async function run() {
 
     //********************************** Blog related API's *******************************/
     // POST
-    app.post("/blogs", async (req, res) => {
+    app.post("/blogs", verifyToken, async (req, res) => {
       try {
         const newBlogs = req.body;
         // console.log(newBlogs)
         const result = await blogCollection.insertOne(newBlogs);
-        console.log(newBlogs);
+        // console.log(result);
         const notificationData = {
           userName: newBlogs.author,
           date: new Date(),
@@ -753,7 +794,10 @@ async function run() {
         );
 
         const updateDoc = { $inc: { unseenNotification: 1 } };
-        const updateResult = await unseenNotificationPerUser.updateMany({}, updateDoc);
+        const updateResult = await unseenNotificationPerUser.updateMany(
+          {},
+          updateDoc
+        );
 
         res.send(result);
       } catch (error) {
@@ -851,6 +895,24 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      // console.log(data);
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          title: data.title,
+          description: data.description,
+          image: data.image,
+        },
+      };
+      const result = await blogCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
+
     app.get("/blog/:email", async (req, res) => {
       // console.log(req.query);
       const email = req.params?.email;
@@ -858,6 +920,31 @@ async function run() {
       const result = await blogCollection.find(query).toArray();
       res.send(result);
       // console.log(result);
+    });
+
+    //Delete Comment
+    app.patch("/blog/deleteComment/:id", async (req, res) => {
+      try {
+        const id = req?.params?.id;
+        const email = req?.query?.email;
+        const commentId = req?.query?.commentID;
+
+        const result = await blogCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $pull: {
+              comments: {
+                commenterEmail: email,
+                commentId: parseInt(commentId),
+              },
+            },
+          }
+        );
+
+        return res.send(result);
+      } catch (err) {
+        return res.send({ message: err.message });
+      }
     });
 
     // delete like or dislike
@@ -881,6 +968,13 @@ async function run() {
           );
           return res.send(result);
         }
+        // else {
+        //   const result = await blogCollection.updateOne(
+        //     { _id: new ObjectId(id) },
+        //     { $pull: { comments: { commenterEmail: email, text: comment } } }
+        //   );
+        //   return res.send(result);
+        // }
       } catch (error) {
         res.send({ error: error.message });
       }
@@ -909,14 +1003,14 @@ async function run() {
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
-    // Priching 
+    // Priching
     app.post("/price", async (req, res) => {
       try {
         const newPricing = req.body;
         // console.log(newAccounts)
         const result = await PricingCollection.insertOne(newPricing);
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     app.post("/newsLetterSubscription", async (req, res) => {
@@ -927,7 +1021,7 @@ async function run() {
           newNewsLetterSubscription
         );
         res.send(result);
-      } catch (error) { }
+      } catch (error) {}
     });
 
     // read
@@ -979,12 +1073,11 @@ async function run() {
           notificationData
         );
 
-
-
-
         const updateDoc = { $inc: { unseenNotification: 1 } };
-        const updateResult = await unseenNotificationPerUser.updateMany({}, updateDoc);
-
+        const updateResult = await unseenNotificationPerUser.updateMany(
+          {},
+          updateDoc
+        );
       } catch (error) {
         console.log("error on POST /bussiness");
       }
@@ -1025,9 +1118,8 @@ async function run() {
  
     app.get("/business", async (req, res) => {
       try {
-        const queryEmail = req.query.email;
-        const filter = queryEmail ? { email: queryEmail } : {};
-    
+        const queryEmail = req?.query?.email;
+        const filter = { userEmail: queryEmail };
         let result;
     
         if (queryEmail) {
@@ -1085,7 +1177,7 @@ async function run() {
         const id = req.params.id;
         // const queryEmail = req?.query?.email;
         const query = { _id: new ObjectId(id) };
-        const result = await businessesCollection.findOne(query)
+        const result = await businessesCollection.findOne(query);
         res.send(result);
       } catch (error) {
         // console.log("Error On get Business id");
@@ -1210,9 +1302,11 @@ async function run() {
           companyVarification: thisBusiness?.companyVarification,
           totalInvestment: totalInvestment,
           investor: InvestmentObj?.investor,
-          investment: InvestmentObj?.invest
+          investment: InvestmentObj?.invest,
         };
-        const addToInvestments = await investmentsCollection.insertOne(newInvestmentObj);
+        const addToInvestments = await investmentsCollection.insertOne(
+          newInvestmentObj
+        );
 
         res.send({ result, addToInvestments });
         // console.log(result)
@@ -1288,7 +1382,10 @@ async function run() {
     // -------------------notification related api----------------------------
 
     app.get("/notifications", async (req, res) => {
-      const cursor = await notificationCollection.find().sort({ date: -1 }).toArray()
+      const cursor = await notificationCollection
+        .find()
+        .sort({ date: -1 })
+        .toArray();
       const result = cursor.sort((a, b) => b.date - a.date);
       res.send(result);
     });
@@ -1324,13 +1421,126 @@ async function run() {
       res.send(result);
     });
 
-
-
-
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     });
+
+    //***********************************Budget Related API ******************************************/
+    app.post("/budget", async (req, res) => {
+      const budget = req.body;
+      console.log(budget);
+      const result = await budgetCollection.insertOne(budget);
+      res.send(result);
+    });
+
+    app.get("/budget/:email", async (req, res) => {
+      const email = { email: req.params.email };
+      console.log(email);
+
+      const result = await budgetCollection.find(email).toArray();
+
+      res.send(result);
+    });
+
+    app.put("/budget/:id", async (req, res) => {
+      try {
+        const id = req?.params?.id;
+
+        if (id == "undefined") {
+          return res.send({ error: "id not found" });
+        }
+        const updateBudget = req.body;
+        console.log(id, updateBudget);
+
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            budgetAmount: updateBudget.budgetAmount,
+            budgetName: updateBudget.budgetName,
+            date: updateBudget.date,
+          },
+        };
+        const result = await budgetCollection.updateOne(
+          filter,
+          updateDoc,
+          options
+        );
+        res.send(result);
+      } catch (error) {
+        console.error("Error updating budget:", error);
+        res.status(500).send({ error: "Internal Server Error" });
+      }
+    });
+
+    app.delete("/budget/:id", async (req, res) => {
+      const id = req.params.id;
+
+      if (id == "undefined") {
+        return res.send({ error: "id not found" });
+      }
+
+      const query = { _id: new ObjectId(id) };
+      const result = await budgetCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.delete("/budget", async (req, res) => {
+		
+
+		const result = await budgetCollection.deleteMany();
+		res.send(result);
+
+	});
+
+	app.get("/ExpanseThisMonth/:email", async (req, res) => {
+		try {
+			const userEmail = req.params.email;
+			const date = new Date();
+			const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+			const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+			const firstDateString = firstDayOfMonth.toISOString();
+			const secondeDateString = lastDayOfMonth.toISOString();
+
+			const filter = {
+				email: userEmail,
+				date: { $gte: firstDateString, $lte: secondeDateString },
+			};
+
+			const BudgetFilter = {
+				email: userEmail,
+			};
+
+			const totalExpanse = await transectionsCollection
+				.find(filter)
+				.toArray();
+			const totalBudget = await budgetCollection
+				.find(BudgetFilter)
+				.toArray();
+
+			const totalExpanseAmount = totalExpanse.reduce((accumulator, transaction) => {
+			  return accumulator + transaction.amount;
+			}, 0);
+			const totalBudgetAmount = totalBudget.reduce((accumulator, transaction) => {
+			  return accumulator + parseInt(transaction.budgetAmount);
+			}, 0);
+
+			const obj = {
+			  totalExpenseInThisMonth : totalExpanseAmount,
+			  totalBudgetInThisMonth : totalBudgetAmount
+			}
+
+			res.send(obj);
+		} catch (error) {
+			console.error(
+				"Error fetching expense data for this month:",
+				error
+			);
+			res.status(500).json({ error: "Internal Server Error" });
+		}
+	});
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -1344,9 +1554,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Asset Hexa Server is Running.");
+	res.send("Asset Hexa Server is Running.");
 });
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}!`);
+	console.log(`Server listening on port ${port}!`);
 });
