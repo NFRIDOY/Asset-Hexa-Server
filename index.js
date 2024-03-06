@@ -426,7 +426,7 @@ async function run() {
       const query = { email: email };
       const options = { upsert: true };
       const isExist = await usersCollection.findOne(query);
-      console.log("User found?----->", isExist);
+      // console.log("User found?----->", isExist);
       if (isExist) return res.send(isExist);
       const result = await usersCollection.updateOne(
         query,
@@ -512,7 +512,7 @@ async function run() {
 
         res.send({ accountData, incomeData, expenseData });
       } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).send("Internal Server Error");
       }
     });
@@ -634,7 +634,7 @@ async function run() {
     app.put("/accounts/:id", async (req, res) => {
       const id = req.params?.id;
       const data = req.body;
-      console.log("id", id, data);
+      // console.log("id", id, data);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const addBalance = {
@@ -673,7 +673,7 @@ async function run() {
         const totalBalance = await getTotalBalance(email);
         res.json({ totalBalance });
       } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
       }
     });
@@ -762,7 +762,7 @@ async function run() {
         const query = { email: emailQuery };
 
         const cursor = await accountsCollection.find(query).toArray();
-        console.log(cursor);
+        // console.log(cursor);
 
         const accPiData = cursor?.map((accAmount) => accAmount?.amount);
         const accPiLebel = cursor?.map((accName) => accName?.account);
@@ -810,7 +810,7 @@ async function run() {
       try {
         const page = parseInt(req?.query?.page);
         const size = parseInt(req?.query?.size);
-        console.log('pagination quary', page, size);
+        // console.log('pagination quary', page, size);
         const result = await blogCollection.find()
           // .sort({ time: -1 })
           .skip(page * size)
@@ -857,7 +857,7 @@ async function run() {
     app.patch("/blogs/:id", async (req, res) => {
       const { id } = req.params;
       const { likeORdislike } = req.query;
-      console.log(likeORdislike);
+      // console.log(likeORdislike);
       const data = req.body;
       const query = {
         _id: new ObjectId(id),
@@ -1056,7 +1056,7 @@ async function run() {
     app.post("/bussiness", async (req, res) => {
       try {
         const newBusiness = req.body;
-        console.log(newBusiness);
+        // console.log(newBusiness);
         // console.log(newBlogs)
         const result = await businessesCollection.insertOne(newBusiness);
         res.send(result);
@@ -1068,7 +1068,7 @@ async function run() {
           photoURL: newBusiness.photoURL,
           type: "business",
         };
-        console.log(notificationData);
+        // console.log(notificationData);
         const notification = await notificationCollection.insertOne(
           notificationData
         );
@@ -1079,7 +1079,7 @@ async function run() {
           updateDoc
         );
       } catch (error) {
-        console.log("error on POST /bussiness");
+        // console.log("error on POST /bussiness");
       }
     });
 
@@ -1206,7 +1206,7 @@ async function run() {
         options
       );
       res.send(result);
-      console.log(result);
+      // console.log(result);
     });
 
     app.put("/blog/:id", async (req, res) => {
@@ -1228,7 +1228,7 @@ async function run() {
 
     app.put("/business/:id", async (req, res) => {
       const id = req?.params.id;
-      console.log(id);
+      // console.log(id);
 
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -1244,7 +1244,7 @@ async function run() {
         options
       );
       res.send(result);
-      console.log(result);
+      // console.log(result);
     });
 
     app.put("/businessInvest/:id", async (req, res) => {
@@ -1359,7 +1359,7 @@ async function run() {
           .json({ error: "Invalid or missing price value." });
       }
       const amount = parseInt(price * 100);
-      console.log(amount);
+      // console.log(amount);
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -1394,8 +1394,8 @@ async function run() {
       const email = req.params.email;
       const notifications = req.body;
 
-      console.log(email);
-      console.log(notifications);
+      // console.log(email);
+      // console.log(notifications);
 
       const filter = { email: email };
       const options = { upsert: true };
@@ -1429,14 +1429,14 @@ async function run() {
     //***********************************Budget Related API ******************************************/
     app.post("/budget", async (req, res) => {
       const budget = req.body;
-      console.log(budget);
+      // console.log(budget);
       const result = await budgetCollection.insertOne(budget);
       res.send(result);
     });
 
     app.get("/budget/:email", async (req, res) => {
       const email = { email: req.params.email };
-      console.log(email);
+      // console.log(email);
 
       const result = await budgetCollection.find(email).toArray();
 
@@ -1451,7 +1451,7 @@ async function run() {
           return res.send({ error: "id not found" });
         }
         const updateBudget = req.body;
-        console.log(id, updateBudget);
+        // console.log(id, updateBudget);
 
         const filter = { _id: new ObjectId(id) };
         const options = { upsert: true };
@@ -1469,7 +1469,7 @@ async function run() {
         );
         res.send(result);
       } catch (error) {
-        console.error("Error updating budget:", error);
+        // console.error("Error updating budget:", error);
         res.status(500).send({ error: "Internal Server Error" });
       }
     });
@@ -1534,10 +1534,10 @@ async function run() {
 
 			res.send(obj);
 		} catch (error) {
-			console.error(
-				"Error fetching expense data for this month:",
-				error
-			);
+			// console.error(
+			// 	"Error fetching expense data for this month:",
+			// 	error
+			// );
 			res.status(500).json({ error: "Internal Server Error" });
 		}
 	});
