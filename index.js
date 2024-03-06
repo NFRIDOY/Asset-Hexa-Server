@@ -611,14 +611,13 @@ async function run() {
     app.post("/accounts", verifyToken, async (req, res) => {
       try {
         const newAccounts = req.body;
-        // console.log(newAccounts)
+
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
       } catch (error) {}
     });
 
     // read
-
     app.get("/accounts", verifyToken, async (req, res) => {
       try {
         const emailQuery = req.query.email;
@@ -1318,7 +1317,7 @@ async function run() {
       }
     });
 
-    app.get("/investments", async (req, res) => {
+    app.get("/investments", verifyToken, async (req, res) => {
       try {
         const queryEmail = req.query.email;
         const filter = { investor: queryEmail };
@@ -1429,32 +1428,25 @@ async function run() {
     });
 
     //***********************************Budget Related API ******************************************/
-    app.post("/budget", async (req, res) => {
-      const budget = req.body;
-      // console.log(budget);
+    app.post("/budget", verifyToken, async (req, res) => {
+      const budget = req?.body;
       const result = await budgetCollection.insertOne(budget);
       res.send(result);
     });
 
-    app.get("/budget/:email", async (req, res) => {
-      const email = { email: req.params.email };
-      // console.log(email);
-
+    app.get("/budget/:email", verifyToken, async (req, res) => {
+      const email = { email: req?.params?.email };
       const result = await budgetCollection.find(email).toArray();
-
       res.send(result);
     });
 
-    app.put("/budget/:id", async (req, res) => {
+    app.put("/budget/:id", verifyToken, async (req, res) => {
       try {
         const id = req?.params?.id;
-
         if (id == "undefined") {
           return res.send({ error: "id not found" });
         }
         const updateBudget = req.body;
-        // console.log(id, updateBudget);
-
         const filter = { _id: new ObjectId(id) };
         const options = { upsert: true };
         const updateDoc = {
@@ -1476,7 +1468,7 @@ async function run() {
       }
     });
 
-    app.delete("/budget/:id", async (req, res) => {
+    app.delete("/budget/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
       if (id == "undefined") {
@@ -1488,12 +1480,12 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/budget", async (req, res) => {
+    app.delete("/budget", verifyToken, async (req, res) => {
       const result = await budgetCollection.deleteMany();
       res.send(result);
     });
 
-    app.get("/ExpanseThisMonth/:email", async (req, res) => {
+    app.get("/ExpanseThisMonth/:email", verifyToken, async (req, res) => {
       try {
         const userEmail = req.params.email;
         const date = new Date();
@@ -1545,10 +1537,6 @@ async function run() {
 
         res.send(obj);
       } catch (error) {
-        // console.error(
-        // 	"Error fetching expense data for this month:",
-        // 	error
-        // );
         res.status(500).json({ error: "Internal Server Error" });
       }
     });
