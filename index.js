@@ -1100,50 +1100,50 @@ async function run() {
     // GET ~~~~~~~~~~~Business
     // pagination 
 
-    // app.get("/bussiness", async (req, res) => {
-    //   try {
-    //     const queryEmail = req.query.email;
-    //     const filter = { email: queryEmail };
-    //     let result;
-    //     if (queryEmail) {
-    //       result = await businessesCollection.find(filter).toArray();
-    //     } else {
-    //       result = await businessesCollection.find().toArray();
-    //     }
-    //     res.send(result);
-    //   } catch (error) {
-    //     res.send(error.message);
-    //   }
-    // });
- 
- 
-    app.get("/business", async (req, res) => {
+    app.get("/bussiness", async (req, res) => {
       try {
-        const queryEmail = req?.query?.email;
-        const filter = { userEmail: queryEmail };
+        const queryEmail = req.query.email;
+        const filter = { email: queryEmail };
         let result;
-    
         if (queryEmail) {
           result = await businessesCollection.find(filter).toArray();
         } else {
           result = await businessesCollection.find().toArray();
         }
-    
-        const page = parseInt(req?.query?.page) || 1;
-        const size = parseInt(req?.query?.size) || 10;
-    
-        console.log('pagination query', page, size);
-    
-        const paginatedResult = await businessesCollection.find(filter)
-          .skip((page - 1) * size)
-          .limit(size)
-          .toArray();
-    
-        res.send(paginatedResult);
+        res.send(result);
       } catch (error) {
         res.send(error.message);
       }
     });
+ 
+ 
+    // app.get("/business", async (req, res) => {
+    //   try {
+    //     const queryEmail = req?.query?.email;
+    //     const filter = { userEmail: queryEmail };
+    //     let result;
+    
+    //     if (queryEmail) {
+    //       result = await businessesCollection.find(filter).toArray();
+    //     } else {
+    //       result = await businessesCollection.find().toArray();
+    //     }
+    
+    //     const page = parseInt(req?.query?.page) || 1;
+    //     const size = parseInt(req?.query?.size) || 10;
+    
+    //     console.log('pagination query', page, size);
+    
+    //     const paginatedResult = await businessesCollection.find(filter)
+    //       .skip((page - 1) * size)
+    //       .limit(size)
+    //       .toArray();
+    
+    //     res.send(paginatedResult);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
 
     
 
