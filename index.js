@@ -15,14 +15,14 @@ app.use(express.json());
 app.use(cookieParser());
 // app.use(cors())
 app.use(
-	cors({
-		origin: [
-			"https://asset-hexa.web.app",
-			"http://localhost:5173",
-			"http://localhost:5174",
-		],
-		credentials: true,
-	})
+  cors({
+    origin: [
+      "https://asset-hexa.web.app",
+      "http://localhost:5173",
+      "http://localhost:5174",
+    ],
+    credentials: true,
+  })
 );
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -31,11 +31,11 @@ const uri = process.env.URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-	serverApi: {
-		version: ServerApiVersion.v1,
-		strict: true,
-		deprecationErrors: true,
-	},
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
 });
 
 async function run() {
@@ -811,14 +811,13 @@ async function run() {
         const page = parseInt(req?.query?.page);
         const size = parseInt(req?.query?.size);
         // console.log('pagination quary', page, size);
-        const result = await blogCollection.find()
+        const result = await blogCollection
+          .find()
           // .sort({ time: -1 })
           .skip(page * size)
           .limit(size)
           .toArray();
         res.send(result);
-
-
       } catch (error) {
         res.send(error.message);
       }
@@ -845,13 +844,10 @@ async function run() {
     //   res.send(result);
     // })
 
-
     app.get("/blogsCount", async (req, res) => {
       const count = await blogCollection.estimatedDocumentCount();
       res.send({ count });
-    })
-
-
+    });
 
     //* patch Like or Dislike or Comment  data *//
     app.patch("/blogs/:id", async (req, res) => {
@@ -1000,6 +996,17 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/bookmark/:id", async (req, res) => {
+      try {
+        const id = req?.params?.id;
+        const result = await bookmarkCollection.deleteOne({
+          blogID: id,
+        });
+        res.send(result);
+      } catch (err) {
+        res.send({ message: err?.message });
+      }
+    });
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
@@ -1097,7 +1104,7 @@ async function run() {
 
     // Demo: /bussiness?email=income@gmail.com
     // GET ~~~~~~~~~~~Business
-    // pagination 
+    // pagination
 
     // app.get("/bussiness", async (req, res) => {
     //   try {
@@ -1114,37 +1121,35 @@ async function run() {
     //     res.send(error.message);
     //   }
     // });
- 
- 
+
     app.get("/business", async (req, res) => {
       try {
         const queryEmail = req?.query?.email;
         const filter = { userEmail: queryEmail };
         let result;
-    
+
         if (queryEmail) {
           result = await businessesCollection.find(filter).toArray();
         } else {
           result = await businessesCollection.find().toArray();
         }
-    
+
         const page = parseInt(req?.query?.page) || 1;
         const size = parseInt(req?.query?.size) || 10;
-    
-        console.log('pagination query', page, size);
-    
-        const paginatedResult = await businessesCollection.find(filter)
+
+        console.log("pagination query", page, size);
+
+        const paginatedResult = await businessesCollection
+          .find(filter)
           .skip((page - 1) * size)
           .limit(size)
           .toArray();
-    
+
         res.send(paginatedResult);
       } catch (error) {
         res.send(error.message);
       }
     });
-
-    
 
     // app.get("/blogs", async (req, res) => {
     //   try {
@@ -1158,7 +1163,6 @@ async function run() {
     //       .toArray();
     //     res.send(result);
 
-
     //   } catch (error) {
     //     res.send(error.message);
     //   }
@@ -1167,9 +1171,7 @@ async function run() {
     app.get("/bussinessCount", async (req, res) => {
       const count = await businessesCollection.estimatedDocumentCount();
       res.send({ count });
-    })
-
-
+    });
 
     // GET by is [dynamic ~~~~~~~~~~~Business]
     app.get("/bussiness/:id", async (req, res) => {
@@ -1487,60 +1489,69 @@ async function run() {
     });
 
     app.delete("/budget", async (req, res) => {
-		
+      const result = await budgetCollection.deleteMany();
+      res.send(result);
+    });
 
-		const result = await budgetCollection.deleteMany();
-		res.send(result);
+    app.get("/ExpanseThisMonth/:email", async (req, res) => {
+      try {
+        const userEmail = req.params.email;
+        const date = new Date();
+        const firstDayOfMonth = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          1
+        );
+        const lastDayOfMonth = new Date(
+          date.getFullYear(),
+          date.getMonth() + 1,
+          0
+        );
 
-	});
+        const firstDateString = firstDayOfMonth.toISOString();
+        const secondeDateString = lastDayOfMonth.toISOString();
 
-	app.get("/ExpanseThisMonth/:email", async (req, res) => {
-		try {
-			const userEmail = req.params.email;
-			const date = new Date();
-			const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-			const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        const filter = {
+          email: userEmail,
+          date: { $gte: firstDateString, $lte: secondeDateString },
+        };
 
-			const firstDateString = firstDayOfMonth.toISOString();
-			const secondeDateString = lastDayOfMonth.toISOString();
+        const BudgetFilter = {
+          email: userEmail,
+        };
 
-			const filter = {
-				email: userEmail,
-				date: { $gte: firstDateString, $lte: secondeDateString },
-			};
+        const totalExpanse = await transectionsCollection
+          .find(filter)
+          .toArray();
+        const totalBudget = await budgetCollection.find(BudgetFilter).toArray();
 
-			const BudgetFilter = {
-				email: userEmail,
-			};
+        const totalExpanseAmount = totalExpanse.reduce(
+          (accumulator, transaction) => {
+            return accumulator + transaction.amount;
+          },
+          0
+        );
+        const totalBudgetAmount = totalBudget.reduce(
+          (accumulator, transaction) => {
+            return accumulator + parseInt(transaction.budgetAmount);
+          },
+          0
+        );
 
-			const totalExpanse = await transectionsCollection
-				.find(filter)
-				.toArray();
-			const totalBudget = await budgetCollection
-				.find(BudgetFilter)
-				.toArray();
+        const obj = {
+          totalExpenseInThisMonth: totalExpanseAmount,
+          totalBudgetInThisMonth: totalBudgetAmount,
+        };
 
-			const totalExpanseAmount = totalExpanse.reduce((accumulator, transaction) => {
-			  return accumulator + transaction.amount;
-			}, 0);
-			const totalBudgetAmount = totalBudget.reduce((accumulator, transaction) => {
-			  return accumulator + parseInt(transaction.budgetAmount);
-			}, 0);
-
-			const obj = {
-			  totalExpenseInThisMonth : totalExpanseAmount,
-			  totalBudgetInThisMonth : totalBudgetAmount
-			}
-
-			res.send(obj);
-		} catch (error) {
-			// console.error(
-			// 	"Error fetching expense data for this month:",
-			// 	error
-			// );
-			res.status(500).json({ error: "Internal Server Error" });
-		}
-	});
+        res.send(obj);
+      } catch (error) {
+        // console.error(
+        // 	"Error fetching expense data for this month:",
+        // 	error
+        // );
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -1554,9 +1565,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-	res.send("Asset Hexa Server is Running.");
+  res.send("Asset Hexa Server is Running.");
 });
 
 app.listen(port, () => {
-	console.log(`Server listening on port ${port}!`);
+  console.log(`Server listening on port ${port}!`);
 });
