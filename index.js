@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { getIncomeExpenseChartData } = require("./utils/chatData");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { verifyToken, verifyAdmin } = require("./utils/jwt");
+const { verifyToken } = require("./utils/jwt");
 
 // req
 app.use(express.json());
@@ -42,7 +42,6 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const database = client.db("assethexadb");
-
     const usersCollection = database.collection("users");
     const transectionsCollection = database.collection("transections");
     const accountsCollection = database.collection("accounts");
@@ -71,6 +70,19 @@ async function run() {
       });
       res.send({ token });
     });
+    // use verify admin after verify token
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded?.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+
+    /************************ JSON WEB TOKEN (JWT) END ********************************/
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -131,7 +143,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/transections", async (req, res) => {
+    app.post("/transections", verifyToken, async (req, res) => {
       try {
         // const id = req.params.id;
         const account = req.body?.account;
@@ -301,7 +313,7 @@ async function run() {
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?&email=backend@example.com) => all translations
-    app.get("/transections", async (req, res) => {
+    app.get("/transections", verifyToken, async (req, res) => {
       try {
         const transQuery = req.query.type;
         const emailQuery = req.query.email;
@@ -391,7 +403,7 @@ async function run() {
       }
     });
 
-    app.get("/totalInExp", async (req, res) => {
+    app.get("/totalInExp", verifyToken, async (req, res) => {
       const userQueryEmail = req.query.email;
 
       const queryIncome = { type: "INCOME", email: userQueryEmail };
@@ -441,7 +453,7 @@ async function run() {
 
     //todo Income Expense chart data
     // Chart data for accounts
-    app.get("/chartData/:email", async (req, res) => {
+    app.get("/chartData/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
 
@@ -596,7 +608,7 @@ async function run() {
     // for accounts
     // create
 
-    app.post("/accounts", async (req, res) => {
+    app.post("/accounts", verifyToken, async (req, res) => {
       try {
         const newAccounts = req.body;
         // console.log(newAccounts)
@@ -607,7 +619,7 @@ async function run() {
 
     // read
 
-    app.get("/accounts", async (req, res) => {
+    app.get("/accounts", verifyToken, async (req, res) => {
       try {
         const emailQuery = req.query.email;
         const query = { email: emailQuery };
@@ -620,7 +632,7 @@ async function run() {
     });
 
     // delete account
-    app.delete("/accounts/:id", async (req, res) => {
+    app.delete("/accounts/:id", verifyToken, async (req, res) => {
       try {
         const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
@@ -632,7 +644,7 @@ async function run() {
     });
 
     // update account
-    app.put("/accounts/:id", async (req, res) => {
+    app.put("/accounts/:id", verifyToken, async (req, res) => {
       const id = req.params?.id;
       const data = req.body;
       // console.log("id", id, data);
@@ -654,7 +666,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/accounts/:id", async (req, res) => {
+    app.get("/accounts/:id", verifyToken, async (req, res) => {
       try {
         const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
@@ -668,7 +680,7 @@ async function run() {
     /***Total balance***/
 
     app.get("/totalBalance/:email", async (req, res) => {
-      const email = req.params.email;
+      const email = req?.params?.email;
 
       try {
         const totalBalance = await getTotalBalance(email);
@@ -982,7 +994,7 @@ async function run() {
     //************************************ Bookmark realated API  ***************************//
 
     //* Add to Bookmark:- post blog data to a collection,users to read later   *//
-    app.post("/bookmark", async (req, res) => {
+    app.post("/bookmark", verifyToken, async (req, res) => {
       const bookmarkedBlogData = req.body;
 
       const result = await bookmarkCollection.insertOne(bookmarkedBlogData);
@@ -990,14 +1002,14 @@ async function run() {
     });
 
     //* Get Bookmark data:-  get bookmark data base on users  *//
-    app.get("/bookmark/:email", async (req, res) => {
+    app.get("/bookmark/:email", verifyToken, async (req, res) => {
       const email = req.params?.email;
       const query = { user: email };
       const result = await bookmarkCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.delete("/bookmark/:id", async (req, res) => {
+    app.delete("/bookmark/:id", verifyToken, async (req, res) => {
       try {
         const id = req?.params?.id;
         const result = await bookmarkCollection.deleteOne({
@@ -1125,28 +1137,15 @@ async function run() {
 
     app.get("/business", async (req, res) => {
       try {
-        const queryEmail = req?.query?.email;
-        const filter = { userEmail: queryEmail };
-        let result;
-
-        if (queryEmail) {
-          result = await businessesCollection.find(filter).toArray();
-        } else {
-          result = await businessesCollection.find().toArray();
-        }
-
-        const page = parseInt(req?.query?.page) || 1;
-        const size = parseInt(req?.query?.size) || 10;
-
-        console.log("pagination query", page, size);
-
-        const paginatedResult = await businessesCollection
-          .find(filter)
-          .skip((page - 1) * size)
+        const page = parseInt(req?.query?.page);
+        const size = parseInt(req?.query?.size);
+        const result = await businessesCollection
+          .find()
+          .skip(page * size)
           .limit(size)
           .toArray();
 
-        res.send(paginatedResult);
+        res.send(result);
       } catch (error) {
         res.send(error.message);
       }
