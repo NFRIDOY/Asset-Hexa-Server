@@ -620,7 +620,7 @@ async function run() {
     // read
     app.get("/accounts", verifyToken, async (req, res) => {
       try {
-        const emailQuery = req.query.email;
+        const emailQuery = req?.query?.email;
         const query = { email: emailQuery };
         const cursor = accountsCollection.find(query);
         const result = await cursor.toArray();
@@ -835,6 +835,15 @@ async function run() {
       }
     });
 
+    //* GET by email Blog Data *//
+    app.get("/blogs/byemail/:email", verifyToken, async (req, res) => {
+      // console.log(req.query);
+      const email = req?.params?.email;
+      const query = { authorEmail: email };
+      const result = await blogCollection.find(query).toArray();
+      res.send(result);
+    });
+
     //* GET single Blog Data *//
     app.get("/blogs/:id", async (req, res) => {
       // console.log(req.query);
@@ -843,18 +852,6 @@ async function run() {
       const result = await blogCollection.findOne(query);
       res.send(result);
     });
-
-    // pagination blog
-    // app.get('/data', async (req, res) => {
-    //   const page = parseInt(req.query.page);
-    //   const size = parseInt(req.query.size);
-    //   console.log('pagination quary', page, size);
-    //   const result = await blogCollection.find()
-    //     .skip(page * size)
-    //     .limit(size)
-    //     .toArray();
-    //   res.send(result);
-    // })
 
     app.get("/blogsCount", async (req, res) => {
       const count = await blogCollection.estimatedDocumentCount();
@@ -1149,8 +1146,19 @@ async function run() {
         res.send(error.message);
       }
     });
-
-    
+    app.get("/business/query/:email", verifyToken, async (req, res) => {
+      try {
+        const email = req?.params?.email;
+        const result = await businessesCollection
+          .find({
+            userEmail: email,
+          })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
 
     // app.get("/blogs", async (req, res) => {
     //   try {
