@@ -8,21 +8,22 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { getIncomeExpenseChartData } = require("./utils/chatData");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { verifyToken, verifyAdmin } = require("./utils/jwt");
+const { verifyToken } = require("./utils/jwt");
 
 // req
 app.use(express.json());
 app.use(cookieParser());
 // app.use(cors())
 app.use(
-	cors({
-		origin: [
-			"https://asset-hexa.web.app",
-			"http://localhost:5173",
-			"http://localhost:5174",
-		],
-		credentials: true,
-	})
+  cors({
+    origin: [
+      "https://asset-hexa.web.app",
+      "https://asset-hexa.firebaseapp.com",
+      "http://localhost:5173",
+      "http://localhost:5174",
+    ],
+    credentials: true,
+  })
 );
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -31,17 +32,16 @@ const uri = process.env.URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-	serverApi: {
-		version: ServerApiVersion.v1,
-		strict: true,
-		deprecationErrors: true,
-	},
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
 });
 
 async function run() {
   try {
     const database = client.db("assethexadb");
-
     const usersCollection = database.collection("users");
     const transectionsCollection = database.collection("transections");
     const accountsCollection = database.collection("accounts");
@@ -70,6 +70,19 @@ async function run() {
       });
       res.send({ token });
     });
+    // use verify admin after verify token
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded?.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+
+    /************************ JSON WEB TOKEN (JWT) END ********************************/
 
     // Save or modify user email, status in DB
     app.put("/users/:email", async (req, res) => {
@@ -130,7 +143,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/transections", async (req, res) => {
+    app.post("/transections", verifyToken, async (req, res) => {
       try {
         // const id = req.params.id;
         const account = req.body?.account;
@@ -300,7 +313,7 @@ async function run() {
     // Example: https://asset-hexa-server.vercel.app/transections?type=EXPENSE&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?type=TRANSFER&email=backend@example.com)
     // Example: https://asset-hexa-server.vercel.app/transections?&email=backend@example.com) => all translations
-    app.get("/transections", async (req, res) => {
+    app.get("/transections", verifyToken, async (req, res) => {
       try {
         const transQuery = req.query.type;
         const emailQuery = req.query.email;
@@ -390,7 +403,7 @@ async function run() {
       }
     });
 
-    app.get("/totalInExp", async (req, res) => {
+    app.get("/totalInExp", verifyToken, async (req, res) => {
       const userQueryEmail = req.query.email;
 
       const queryIncome = { type: "INCOME", email: userQueryEmail };
@@ -440,7 +453,7 @@ async function run() {
 
     //todo Income Expense chart data
     // Chart data for accounts
-    app.get("/chartData/:email", async (req, res) => {
+    app.get("/chartData/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
 
@@ -595,20 +608,19 @@ async function run() {
     // for accounts
     // create
 
-    app.post("/accounts", async (req, res) => {
+    app.post("/accounts", verifyToken, async (req, res) => {
       try {
         const newAccounts = req.body;
-        // console.log(newAccounts)
+
         const result = await accountsCollection.insertOne(newAccounts);
         res.send(result);
       } catch (error) {}
     });
 
     // read
-
-    app.get("/accounts", async (req, res) => {
+    app.get("/accounts", verifyToken, async (req, res) => {
       try {
-        const emailQuery = req.query.email;
+        const emailQuery = req?.query?.email;
         const query = { email: emailQuery };
         const cursor = accountsCollection.find(query);
         const result = await cursor.toArray();
@@ -619,7 +631,7 @@ async function run() {
     });
 
     // delete account
-    app.delete("/accounts/:id", async (req, res) => {
+    app.delete("/accounts/:id", verifyToken, async (req, res) => {
       try {
         const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
@@ -631,7 +643,7 @@ async function run() {
     });
 
     // update account
-    app.put("/accounts/:id", async (req, res) => {
+    app.put("/accounts/:id", verifyToken, async (req, res) => {
       const id = req.params?.id;
       const data = req.body;
       // console.log("id", id, data);
@@ -653,7 +665,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/accounts/:id", async (req, res) => {
+    app.get("/accounts/:id", verifyToken, async (req, res) => {
       try {
         const id = req.params?.id;
         const query = { _id: new ObjectId(id) };
@@ -667,7 +679,7 @@ async function run() {
     /***Total balance***/
 
     app.get("/totalBalance/:email", async (req, res) => {
-      const email = req.params.email;
+      const email = req?.params?.email;
 
       try {
         const totalBalance = await getTotalBalance(email);
@@ -811,17 +823,25 @@ async function run() {
         const page = parseInt(req?.query?.page);
         const size = parseInt(req?.query?.size);
         // console.log('pagination quary', page, size);
-        const result = await blogCollection.find()
+        const result = await blogCollection
+          .find()
           // .sort({ time: -1 })
           .skip(page * size)
           .limit(size)
           .toArray();
         res.send(result);
-
-
       } catch (error) {
         res.send(error.message);
       }
+    });
+
+    //* GET by email Blog Data *//
+    app.get("/blogs/byemail/:email", verifyToken, async (req, res) => {
+      // console.log(req.query);
+      const email = req?.params?.email;
+      const query = { authorEmail: email };
+      const result = await blogCollection.find(query).toArray();
+      res.send(result);
     });
 
     //* GET single Blog Data *//
@@ -833,25 +853,10 @@ async function run() {
       res.send(result);
     });
 
-    // pagination blog
-    // app.get('/data', async (req, res) => {
-    //   const page = parseInt(req.query.page);
-    //   const size = parseInt(req.query.size);
-    //   console.log('pagination quary', page, size);
-    //   const result = await blogCollection.find()
-    //     .skip(page * size)
-    //     .limit(size)
-    //     .toArray();
-    //   res.send(result);
-    // })
-
-
     app.get("/blogsCount", async (req, res) => {
       const count = await blogCollection.estimatedDocumentCount();
       res.send({ count });
-    })
-
-
+    });
 
     //* patch Like or Dislike or Comment  data *//
     app.patch("/blogs/:id", async (req, res) => {
@@ -888,7 +893,7 @@ async function run() {
     });
 
     // Delete blogs
-    app.delete("/blogs/:id", async (req, res) => {
+    app.delete("/blogs/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await blogCollection.deleteOne(query);
@@ -985,7 +990,7 @@ async function run() {
     //************************************ Bookmark realated API  ***************************//
 
     //* Add to Bookmark:- post blog data to a collection,users to read later   *//
-    app.post("/bookmark", async (req, res) => {
+    app.post("/bookmark", verifyToken, async (req, res) => {
       const bookmarkedBlogData = req.body;
 
       const result = await bookmarkCollection.insertOne(bookmarkedBlogData);
@@ -993,13 +998,24 @@ async function run() {
     });
 
     //* Get Bookmark data:-  get bookmark data base on users  *//
-    app.get("/bookmark/:email", async (req, res) => {
+    app.get("/bookmark/:email", verifyToken, async (req, res) => {
       const email = req.params?.email;
       const query = { user: email };
       const result = await bookmarkCollection.find(query).toArray();
       res.send(result);
     });
 
+    app.delete("/bookmark/:id", verifyToken, async (req, res) => {
+      try {
+        const id = req?.params?.id;
+        const result = await bookmarkCollection.deleteOne({
+          blogID: id,
+        });
+        res.send(result);
+      } catch (err) {
+        res.send({ message: err?.message });
+      }
+    });
     //************************************ END of Bookmark realated API  ***************************//
     // for newsletter subscription
     // create
@@ -1097,7 +1113,7 @@ async function run() {
 
     // Demo: /bussiness?email=income@gmail.com
     // GET ~~~~~~~~~~~Business
-    // pagination 
+    // pagination
 
     // app.get("/bussiness", async (req, res) => {
     //   try {
@@ -1114,37 +1130,35 @@ async function run() {
     //     res.send(error.message);
     //   }
     // });
- 
- 
+
     app.get("/business", async (req, res) => {
       try {
-        const queryEmail = req?.query?.email;
-        const filter = { userEmail: queryEmail };
-        let result;
-    
-        if (queryEmail) {
-          result = await businessesCollection.find(filter).toArray();
-        } else {
-          result = await businessesCollection.find().toArray();
-        }
-    
-        const page = parseInt(req?.query?.page) || 1;
-        const size = parseInt(req?.query?.size) || 10;
-    
-        console.log('pagination query', page, size);
-    
-        const paginatedResult = await businessesCollection.find(filter)
-          .skip((page - 1) * size)
+        const page = parseInt(req?.query?.page);
+        const size = parseInt(req?.query?.size);
+        const result = await businessesCollection
+          .find()
+          .skip(page * size)
           .limit(size)
           .toArray();
-    
-        res.send(paginatedResult);
+
+        res.send(result);
       } catch (error) {
         res.send(error.message);
       }
     });
-
-    
+    app.get("/business/query/:email", verifyToken, async (req, res) => {
+      try {
+        const email = req?.params?.email;
+        const result = await businessesCollection
+          .find({
+            userEmail: email,
+          })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        res.send(error.message);
+      }
+    });
 
     // app.get("/blogs", async (req, res) => {
     //   try {
@@ -1158,7 +1172,6 @@ async function run() {
     //       .toArray();
     //     res.send(result);
 
-
     //   } catch (error) {
     //     res.send(error.message);
     //   }
@@ -1167,9 +1180,7 @@ async function run() {
     app.get("/bussinessCount", async (req, res) => {
       const count = await businessesCollection.estimatedDocumentCount();
       res.send({ count });
-    })
-
-
+    });
 
     // GET by is [dynamic ~~~~~~~~~~~Business]
     app.get("/bussiness/:id", async (req, res) => {
@@ -1316,7 +1327,7 @@ async function run() {
       }
     });
 
-    app.get("/investments", async (req, res) => {
+    app.get("/investments", verifyToken, async (req, res) => {
       try {
         const queryEmail = req.query.email;
         const filter = { investor: queryEmail };
@@ -1427,32 +1438,25 @@ async function run() {
     });
 
     //***********************************Budget Related API ******************************************/
-    app.post("/budget", async (req, res) => {
-      const budget = req.body;
-      // console.log(budget);
+    app.post("/budget", verifyToken, async (req, res) => {
+      const budget = req?.body;
       const result = await budgetCollection.insertOne(budget);
       res.send(result);
     });
 
-    app.get("/budget/:email", async (req, res) => {
-      const email = { email: req.params.email };
-      // console.log(email);
-
+    app.get("/budget/:email", verifyToken, async (req, res) => {
+      const email = { email: req?.params?.email };
       const result = await budgetCollection.find(email).toArray();
-
       res.send(result);
     });
 
-    app.put("/budget/:id", async (req, res) => {
+    app.put("/budget/:id", verifyToken, async (req, res) => {
       try {
         const id = req?.params?.id;
-
         if (id == "undefined") {
           return res.send({ error: "id not found" });
         }
         const updateBudget = req.body;
-        // console.log(id, updateBudget);
-
         const filter = { _id: new ObjectId(id) };
         const options = { upsert: true };
         const updateDoc = {
@@ -1474,7 +1478,7 @@ async function run() {
       }
     });
 
-    app.delete("/budget/:id", async (req, res) => {
+    app.delete("/budget/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
       if (id == "undefined") {
@@ -1486,61 +1490,66 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/budget", async (req, res) => {
-		
+    app.delete("/budget", verifyToken, async (req, res) => {
+      const result = await budgetCollection.deleteMany();
+      res.send(result);
+    });
 
-		const result = await budgetCollection.deleteMany();
-		res.send(result);
+    app.get("/ExpanseThisMonth/:email", verifyToken, async (req, res) => {
+      try {
+        const userEmail = req.params.email;
+        const date = new Date();
+        const firstDayOfMonth = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          1
+        );
+        const lastDayOfMonth = new Date(
+          date.getFullYear(),
+          date.getMonth() + 1,
+          0
+        );
 
-	});
+        const firstDateString = firstDayOfMonth.toISOString();
+        const secondeDateString = lastDayOfMonth.toISOString();
 
-	app.get("/ExpanseThisMonth/:email", async (req, res) => {
-		try {
-			const userEmail = req.params.email;
-			const date = new Date();
-			const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-			const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        const filter = {
+          email: userEmail,
+          date: { $gte: firstDateString, $lte: secondeDateString },
+        };
 
-			const firstDateString = firstDayOfMonth.toISOString();
-			const secondeDateString = lastDayOfMonth.toISOString();
+        const BudgetFilter = {
+          email: userEmail,
+        };
 
-			const filter = {
-				email: userEmail,
-				date: { $gte: firstDateString, $lte: secondeDateString },
-			};
+        const totalExpanse = await transectionsCollection
+          .find(filter)
+          .toArray();
+        const totalBudget = await budgetCollection.find(BudgetFilter).toArray();
 
-			const BudgetFilter = {
-				email: userEmail,
-			};
+        const totalExpanseAmount = totalExpanse.reduce(
+          (accumulator, transaction) => {
+            return accumulator + transaction.amount;
+          },
+          0
+        );
+        const totalBudgetAmount = totalBudget.reduce(
+          (accumulator, transaction) => {
+            return accumulator + parseInt(transaction.budgetAmount);
+          },
+          0
+        );
 
-			const totalExpanse = await transectionsCollection
-				.find(filter)
-				.toArray();
-			const totalBudget = await budgetCollection
-				.find(BudgetFilter)
-				.toArray();
+        const obj = {
+          totalExpenseInThisMonth: totalExpanseAmount,
+          totalBudgetInThisMonth: totalBudgetAmount,
+        };
 
-			const totalExpanseAmount = totalExpanse.reduce((accumulator, transaction) => {
-			  return accumulator + transaction.amount;
-			}, 0);
-			const totalBudgetAmount = totalBudget.reduce((accumulator, transaction) => {
-			  return accumulator + parseInt(transaction.budgetAmount);
-			}, 0);
-
-			const obj = {
-			  totalExpenseInThisMonth : totalExpanseAmount,
-			  totalBudgetInThisMonth : totalBudgetAmount
-			}
-
-			res.send(obj);
-		} catch (error) {
-			// console.error(
-			// 	"Error fetching expense data for this month:",
-			// 	error
-			// );
-			res.status(500).json({ error: "Internal Server Error" });
-		}
-	});
+        res.send(obj);
+      } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -1554,9 +1563,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-	res.send("Asset Hexa Server is Running.");
+  res.send("Asset Hexa Server is Running.");
 });
 
 app.listen(port, () => {
-	console.log(`Server listening on port ${port}!`);
+  console.log(`Server listening on port ${port}!`);
 });
