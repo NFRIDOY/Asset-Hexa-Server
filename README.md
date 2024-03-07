@@ -1,4 +1,7 @@
 # Asset-Hexa-Server
+## [Live Link](https://asset-hexa.web.app)
+## [Front-end Repository](https://github.com/NFRIDOY/Asset-Hexa)
+## [Asset-Hexa Documentation](https://docs.google.com/document/d/1cq7pdMNlDqruDteyre_6Q3NLg3R-7xZIeYwFlKhorww/edit#heading=h.x5a2dzvde0yk)
 ## APIs
 - API: [https://asset-hexa-server.vercel.app](https://asset-hexa-server.vercel.app)
 - Post API for account: [https://asset-hexa-server.vercel.app/accounts](https://asset-hexa-server.vercel.app/accounts)
