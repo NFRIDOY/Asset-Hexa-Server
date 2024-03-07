@@ -1118,16 +1118,32 @@ async function run() {
     // GET ~~~~~~~~~~~Business
     // pagination
 
-    app.get("/bussiness", async (req, res) => {
+    // app.get("/bussiness", async (req, res) => {
+    //   try {
+    //     const queryEmail = req.query.email;
+    //     const filter = { email: queryEmail };
+    //     let result;
+    //     if (queryEmail) {
+    //       result = await businessesCollection.find(filter).toArray();
+    //     } else {
+    //       result = await businessesCollection.find().toArray();
+    //     }
+    //     res.send(result);
+    //   } catch (error) {
+    //     res.send(error.message);
+    //   }
+    // });
+
+    app.get("/business", async (req, res) => {
       try {
-        const queryEmail = req.query.email;
-        const filter = { email: queryEmail };
-        let result;
-        if (queryEmail) {
-          result = await businessesCollection.find(filter).toArray();
-        } else {
-          result = await businessesCollection.find().toArray();
-        }
+        const page = parseInt(req?.query?.page);
+        const size = parseInt(req?.query?.size);
+        const result = await businessesCollection
+          .find()
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+
         res.send(result);
       } catch (error) {
         res.send(error.message);
