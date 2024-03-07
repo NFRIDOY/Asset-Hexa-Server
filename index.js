@@ -893,7 +893,7 @@ async function run() {
     });
 
     // Delete blogs
-    app.delete("/blogs/:id", async (req, res) => {
+    app.delete("/blogs/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await blogCollection.deleteOne(query);
